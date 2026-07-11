@@ -1,0 +1,176 @@
+// Redline — AI Security Testing Platform (SaaS)
+// Prisma schema (PostgreSQL on Neon)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// NextAuth models (required by @next-auth/prisma-adapter)
+// ─────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Billing / plan
+  plan                    String  @default("free") // free | pro | team
+  stripeCustomerId        String?
+  stripeSubscriptionId    String?
+  subscriptionStatus      String? // active | past_due | canceled | trialing | incomplete
+  currentPeriodEnd        DateTime?
+
+  accounts      Account[]
+  sessions      Session[]
+  targets       Target[]
+  scans         Scan[]
+  auditEvents   AuditEvent[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────
+// Redline application models (multi-tenant)
+// ─────────────────────────────────────────────
+
+enum TargetMode {
+  simulate
+  api
+}
+
+model Target {
+  id           String     @id @default(cuid())
+  userId       String
+  name         String
+  systemPrompt String
+  context      String?
+  mode         TargetMode @default(simulate)
+  // API-connect fields (encrypted at rest in the application layer)
+  apiEndpoint  String?
+  apiHeaders   String? // JSON string of headers, encrypted
+  apiModel     String?
+  parentId     String?
+  version      Int        @default(1)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scans        Scan[]
+  parent       Target?    @relation("TargetVersions", fields: [parentId], references: [id])
+  children     Target[]   @relation("TargetVersions")
+
+  @@index([userId, createdAt])
+  @@index([parentId])
+}
+
+model AttackType {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  name            String
+  category        String
+  severityWeight  Int
+  description     String
+  results         Result[]
+}
+
+model Scan {
+  id              String   @id @default(cuid())
+  userId          String
+  targetId        String
+  createdAt       DateTime @default(now())
+  status          String   @default("running") // running | complete | failed
+  overallScore    Int?
+  categoryScores  String?  // JSON string of { category: score }
+  note            String?
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  target          Target   @relation(fields: [targetId], references: [id], onDelete: Cascade)
+  results         Result[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model Result {
+  id              String   @id @default(cuid())
+  scanId          String
+  attackTypeId    String
+  technique       String
+  payload         String
+  response        String
+  success         Boolean
+  evidence        String
+  conversation    String?  // JSON string of the full conversation for multi-turn
+  createdAt       DateTime @default(now())
+
+  scan            Scan       @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  attackType      AttackType @relation(fields: [attackTypeId], references: [id])
+
+  @@index([scanId])
+  @@index([scanId, success])
+  @@index([attackTypeId])
+}
+
+// ─────────────────────────────────────────────
+// Audit log (security + compliance)
+// ─────────────────────────────────────────────
+
+model AuditEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String   // e.g. "scan.create", "target.delete", "harden.run", "auth.login"
+  target    String?  // e.g. "target:abc123" or "scan:xyz789"
+  ip        String?
+  userAgent String?
+  meta      String?  // JSON string of extra context
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+}
