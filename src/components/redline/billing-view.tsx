@@ -426,23 +426,36 @@ function CurrentPlanBanner({ usage }: { usage: UsageInfo }) {
       : usage.plan === 'pro'
         ? 'Pro'
         : 'Free'
+  const isAdmin = (usage as UsageInfo & { isAdmin?: boolean }).isAdmin
   return (
-    <Card className="border-red-200 bg-gradient-to-br from-red-50 via-white to-white">
+    <Card className={isAdmin ? 'border-amber-300 bg-gradient-to-br from-amber-50 via-white to-white' : 'border-red-200 bg-gradient-to-br from-red-50 via-white to-white'}>
       <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Crown className="h-5 w-5 text-red-600" />
+            <Crown className={isAdmin ? 'h-5 w-5 text-amber-600' : 'h-5 w-5 text-red-600'} />
             <span className="text-base font-semibold text-neutral-900">
-              You&apos;re on the {planName} plan
+              {isAdmin ? 'Admin access' : `You're on the ${planName} plan`}
             </span>
-            <PlanBadge plan={usage.plan} />
-            <SubStatusPill status={usage.subscriptionStatus} />
+            {isAdmin ? (
+              <Badge variant="outline" className="border-amber-300 bg-amber-100 text-amber-800">
+                ★ Admin — unlimited
+              </Badge>
+            ) : (
+              <PlanBadge plan={usage.plan} />
+            )}
+            {!isAdmin && <SubStatusPill status={usage.subscriptionStatus} />}
           </div>
-          <div className="text-xs text-muted-foreground">
-            Billing period {format(new Date(usage.periodStart), 'MMM d')} –{' '}
-            {format(new Date(usage.periodEnd), 'MMM d, yyyy')}. Quota resets{' '}
-            {format(new Date(usage.resetAt), "MMM d 'at' h:mm a")}.
-          </div>
+          {isAdmin ? (
+            <div className="text-xs text-amber-700">
+              Admin users bypass all quotas, rate limits, and feature gates.
+            </div>
+          ) : (
+            <div className="text-xs text-muted-foreground">
+              Billing period {format(new Date(usage.periodStart), 'MMM d')} –{' '}
+              {format(new Date(usage.periodEnd), 'MMM d, yyyy')}. Quota resets{' '}
+              {format(new Date(usage.resetAt), "MMM d 'at' h:mm a")}.
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

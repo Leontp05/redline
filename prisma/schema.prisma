@@ -30,6 +30,9 @@ model User {
   subscriptionStatus      String? // active | past_due | canceled | trialing | incomplete
   currentPeriodEnd        DateTime?
 
+  // Admin — bypasses all quotas, rate limits, and feature gates
+  isAdmin                 Boolean @default(false)
+
   accounts      Account[]
   sessions      Session[]
   targets       Target[]

@@ -120,12 +120,17 @@ export function Header({ user }: { user: AuthUser }) {
                   {user.image ? (
                     <AvatarImage src={user.image} alt={user.name ?? 'user avatar'} />
                   ) : null}
-                  <AvatarFallback className="bg-red-600 text-[10px] font-semibold text-white">
-                    {initialsFrom(user)}
+                  <AvatarFallback className={user.isAdmin ? 'bg-amber-600 text-[10px] font-semibold text-white' : 'bg-red-600 text-[10px] font-semibold text-white'}>
+                    {user.isAdmin ? '★' : initialsFrom(user)}
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden max-w-[120px] truncate text-xs font-medium text-neutral-700 sm:block">
                   {user.name ?? user.email ?? 'Account'}
+                  {user.isAdmin && (
+                    <span className="ml-1 rounded bg-amber-100 px-1 py-0.5 text-[9px] font-bold uppercase text-amber-700">
+                      Admin
+                    </span>
+                  )}
                 </span>
               </button>
             </DropdownMenuTrigger>

@@ -95,10 +95,21 @@ export async function getUsage(userId: string): Promise<UsageInfo | null> {
 /**
  * Can the user create a new scan right now?
  * Returns { allowed: boolean, reason?: string }
+ *
+ * Admin users bypass all quotas.
  */
 export async function canCreateScan(
   userId: string,
 ): Promise<{ allowed: boolean; reason?: string; usage?: UsageInfo }> {
+  // Check if user is admin — admins bypass all limits.
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { isAdmin: true },
+  })
+  if (user?.isAdmin) {
+    return { allowed: true }
+  }
+
   const usage = await getUsage(userId)
   if (!usage) {
     return { allowed: false, reason: 'User not found.' }
@@ -118,10 +129,21 @@ export async function canCreateScan(
 
 /**
  * Can the user create a new target?
+ *
+ * Admin users bypass all quotas.
  */
 export async function canCreateTarget(
   userId: string,
 ): Promise<{ allowed: boolean; reason?: string }> {
+  // Check if user is admin — admins bypass all limits.
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { isAdmin: true },
+  })
+  if (user?.isAdmin) {
+    return { allowed: true }
+  }
+
   const usage = await getUsage(userId)
   if (!usage) return { allowed: false, reason: 'User not found.' }
 

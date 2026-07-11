@@ -36,7 +36,7 @@ export async function GET() {
     const user = await await import('@/lib/db').then(({ db }) =>
       db.user.findUnique({
         where: { id: userId },
-        select: { subscriptionStatus: true },
+        select: { subscriptionStatus: true, isAdmin: true },
       }),
     )
 
@@ -44,6 +44,7 @@ export async function GET() {
       ...usage,
       stripeConfigured: isStripeConfigured(),
       subscriptionStatus: user?.subscriptionStatus ?? null,
+      isAdmin: user?.isAdmin ?? false,
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)

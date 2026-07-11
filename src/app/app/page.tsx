@@ -84,6 +84,20 @@ function FullScreenSpinner({ label }: { label: string }) {
 }
 
 function LoginScreen() {
+  const [showAdmin, setShowAdmin] = useState(false)
+  const [adminKey, setAdminKey] = useState('')
+  const [adminLoading, setAdminLoading] = useState(false)
+
+  const handleAdminLogin = () => {
+    if (!adminKey.trim()) return
+    setAdminLoading(true)
+    signIn('admin', {
+      callbackUrl: '/app',
+      password: adminKey.trim(),
+      redirect: true,
+    })
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-neutral-50">
       <main className="flex flex-1 items-center justify-center px-4 py-12">
@@ -125,17 +139,46 @@ function LoginScreen() {
               By signing in you agree to use Redline for educational and
               authorized security testing only.
             </p>
+
+            {/* Admin login (collapsible) */}
             <div className="mt-2 border-t border-dashed border-neutral-200 pt-4">
-              <button
-                onClick={() => signIn('dev-test', { callbackUrl: '/app', email: 'test@redline.dev' })}
-                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-red-50 px-4 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
-              >
-                <ShieldAlert className="h-3.5 w-3.5" />
-                Sign in as test user (dev only)
-              </button>
-              <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
-                Bypasses OAuth for local testing. Disabled in production.
-              </p>
+              {!showAdmin ? (
+                <button
+                  onClick={() => setShowAdmin(true)}
+                  className="mx-auto block text-[10px] text-neutral-400 hover:text-neutral-600"
+                >
+                  Admin login
+                </button>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="password"
+                    placeholder="Admin API key"
+                    value={adminKey}
+                    onChange={(e) => setAdminKey(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
+                    className="h-9 w-full rounded-md border border-neutral-300 px-3 text-xs"
+                    disabled={adminLoading}
+                  />
+                  <button
+                    onClick={handleAdminLogin}
+                    disabled={adminLoading || !adminKey.trim()}
+                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-xs font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50"
+                  >
+                    {adminLoading ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        Authenticating...
+                      </>
+                    ) : (
+                      <>
+                        <ShieldAlert className="h-3.5 w-3.5" />
+                        Sign in as Admin
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

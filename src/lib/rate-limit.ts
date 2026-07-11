@@ -27,10 +27,15 @@ export async function checkScanRateLimit(
 ): Promise<RateLimitResult> {
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: { plan: true },
+    select: { plan: true, isAdmin: true },
   })
   if (!user) {
     return { allowed: false, retryAfterSeconds: 0, reason: 'User not found.' }
+  }
+
+  // Admins bypass rate limiting.
+  if (user.isAdmin) {
+    return { allowed: true, retryAfterSeconds: 0 }
   }
 
   const plan = getPlan(user.plan)

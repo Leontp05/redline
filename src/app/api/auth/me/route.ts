@@ -19,6 +19,7 @@ export async function GET() {
       name: session.user.name,
       email: session.user.email,
       image: session.user.image,
+      isAdmin: (session.user as { isAdmin?: boolean }).isAdmin ?? false,
     },
   })
 }
