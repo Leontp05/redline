@@ -10,6 +10,16 @@ import ZAI from 'z-ai-web-dev-sdk'
  * CRITICAL: This module is server-only. It must never be imported from client
  * components. API route handlers in `src/app/api/**` import these functions
  * and they all run with `runtime = 'nodejs'`.
+ *
+ * CONFIG: The SDK reads `.z-ai-config` from disk (cwd, home, /etc/). In
+ * production (Vercel), this file doesn't exist — so we construct the client
+ * directly from env vars if they're set.
+ *
+ * Required env vars for production:
+ *   ZAI_BASE_URL  — e.g. https://internal-api.z.ai/v1
+ *   ZAI_API_KEY   — your API key
+ *   ZAI_TOKEN     — (optional) auth token
+ *   ZAI_USER_ID   — (optional) user ID
  */
 
 type ChatTurn = { role: 'user' | 'assistant'; content: string }
@@ -17,8 +27,13 @@ type ChatTurn = { role: 'user' | 'assistant'; content: string }
 let zaiPromise: Promise<unknown> | null = null
 
 /**
- * Lazily create the ZAI client. The SDK reads `.z-ai-config` on first call,
- * so we memoize the promise to avoid re-instantiating per request.
+ * Lazily create the ZAI client.
+ *
+ * Priority:
+ *   1. If ZAI_API_KEY + ZAI_BASE_URL env vars are set → construct directly
+ *      (production / Vercel)
+ *   2. Otherwise → fall back to ZAI.create() which reads .z-ai-config
+ *      (local dev / sandbox)
  */
 async function getClient(): Promise<{
   chat: {
@@ -34,7 +49,24 @@ async function getClient(): Promise<{
   }
 }> {
   if (!zaiPromise) {
-    zaiPromise = ZAI.create()
+    const envApiKey = process.env.ZAI_API_KEY
+    const envBaseUrl = process.env.ZAI_BASE_URL
+
+    if (envApiKey && envBaseUrl) {
+      // Production: construct directly from env vars
+      const config: Record<string, string> = {
+        apiKey: envApiKey,
+        baseUrl: envBaseUrl,
+      }
+      if (process.env.ZAI_TOKEN) config.token = process.env.ZAI_TOKEN
+      if (process.env.ZAI_USER_ID) config.userId = process.env.ZAI_USER_ID
+      if (process.env.ZAI_CHAT_ID) config.chatId = process.env.ZAI_CHAT_ID
+      // The SDK exports a default class; construct it directly.
+      zaiPromise = Promise.resolve(new (ZAI as unknown as new (config: Record<string, string>) => unknown)(config))
+    } else {
+      // Local dev / sandbox: fall back to config file
+      zaiPromise = ZAI.create()
+    }
   }
   return (await zaiPromise) as never
 }
