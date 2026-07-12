@@ -170,7 +170,7 @@ function CreateTargetForm() {
               <button
                 type="button"
                 onClick={() => setShowTemplates(!showTemplates)}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-xs text-neutral-500 hover:text-neutral-200"
               >
                 {showTemplates ? 'Hide' : 'Show'} templates
               </button>
@@ -182,11 +182,11 @@ function CreateTargetForm() {
                     key={tpl.id}
                     type="button"
                     onClick={() => applyTemplate(tpl)}
-                    className="flex flex-col items-start gap-1 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-red-500/50 hover:bg-muted"
+                    className="flex flex-col items-start gap-1 rounded-lg border border-neutral-800 bg-[#0f0f10] p-3 text-left transition-colors hover:border-red-500/50 hover:bg-neutral-900"
                   >
                     <span className="text-lg">{tpl.icon}</span>
-                    <span className="text-xs font-semibold text-foreground">{tpl.name}</span>
-                    <span className="text-[10px] text-muted-foreground">{tpl.description}</span>
+                    <span className="text-xs font-semibold text-neutral-200">{tpl.name}</span>
+                    <span className="text-[10px] text-neutral-500">{tpl.description}</span>
                   </button>
                 ))}
               </div>
@@ -204,19 +204,19 @@ function CreateTargetForm() {
                 className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
                   mode === 'simulate'
                     ? 'border-red-300 bg-red-50'
-                    : 'border-border bg-card hover:bg-background'
+                    : 'border-neutral-800 bg-[#0f0f10] hover:bg-[#0a0a0b]'
                 }`}
               >
                 <FlaskConical
                   className={`mt-0.5 h-4 w-4 shrink-0 ${
-                    mode === 'simulate' ? 'text-red-600' : 'text-muted-foreground'
+                    mode === 'simulate' ? 'text-red-600' : 'text-neutral-500'
                   }`}
                 />
                 <div>
-                  <div className="text-sm font-semibold text-foreground">
+                  <div className="text-sm font-semibold text-neutral-200">
                     Simulate
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-neutral-500">
                     Test against our built-in model using your system prompt.
                   </div>
                 </div>
@@ -228,19 +228,19 @@ function CreateTargetForm() {
                 className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
                   mode === 'api'
                     ? 'border-red-300 bg-red-50'
-                    : 'border-border bg-card hover:bg-background'
+                    : 'border-neutral-800 bg-[#0f0f10] hover:bg-[#0a0a0b]'
                 }`}
               >
                 <Globe
                   className={`mt-0.5 h-4 w-4 shrink-0 ${
-                    mode === 'api' ? 'text-red-600' : 'text-muted-foreground'
+                    mode === 'api' ? 'text-red-600' : 'text-neutral-500'
                   }`}
                 />
                 <div>
-                  <div className="text-sm font-semibold text-foreground">
+                  <div className="text-sm font-semibold text-neutral-200">
                     API Connect
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-neutral-500">
                     Attack your live endpoint (OpenAI-compatible).
                   </div>
                 </div>
@@ -270,7 +270,7 @@ function CreateTargetForm() {
               disabled={createTarget.isPending}
               className="resize-y font-mono text-xs"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-neutral-500">
               {mode === 'api'
                 ? 'Your system prompt — sent as the system message to your endpoint. We need it to design the attacks.'
                 : 'The system prompt of the target you want to attack.'}
@@ -295,14 +295,14 @@ function CreateTargetForm() {
                   disabled={createTarget.isPending}
                   className="font-mono text-xs"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-neutral-500">
                   Must be an OpenAI-compatible chat-completions endpoint (HTTPS).
                 </p>
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="api-headers">
                   Headers{' '}
-                  <span className="font-normal text-muted-foreground">
+                  <span className="font-normal text-neutral-500">
                     (JSON — include your auth)
                   </span>
                 </Label>
@@ -315,7 +315,7 @@ function CreateTargetForm() {
                   disabled={createTarget.isPending}
                   className="resize-y font-mono text-xs"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-neutral-500">
                   JSON object of HTTP headers. Put your API key in the{' '}
                   <code>Authorization</code> header.
                 </p>
@@ -337,7 +337,7 @@ function CreateTargetForm() {
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="target-context">
               Context{' '}
-              <span className="font-normal text-muted-foreground">
+              <span className="font-normal text-neutral-500">
                 (optional)
               </span>
             </Label>
@@ -350,7 +350,7 @@ function CreateTargetForm() {
               disabled={createTarget.isPending}
               className="resize-y font-mono text-xs"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-neutral-500">
               Used for RAG/injection attacks — leave empty for normal targets.
             </p>
           </div>
@@ -396,7 +396,7 @@ function TargetRow({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate text-base font-semibold text-foreground">
+              <h3 className="truncate text-base font-semibold text-neutral-200">
                 {target.name}
               </h3>
               <Badge variant="secondary" className="font-mono">
@@ -413,7 +413,7 @@ function TargetRow({
               ) : (
                 <Badge
                   variant="outline"
-                  className="border-border bg-background text-muted-foreground"
+                  className="border-neutral-800 bg-[#0a0a0b] text-neutral-500"
                 >
                   <FlaskConical className="h-3 w-3" />
                   Simulate
@@ -429,27 +429,27 @@ function TargetRow({
                 </Badge>
               )}
             </div>
-            <div className="mt-1 text-xs text-muted-foreground">
+            <div className="mt-1 text-xs text-neutral-500">
               Created{' '}
               {formatDistanceToNow(new Date(target.createdAt), {
                 addSuffix: true,
               })}{' '}
               · {target.scanCount} scan{target.scanCount === 1 ? '' : 's'}
             </div>
-            <div className="mt-3 line-clamp-2 max-h-12 overflow-hidden text-xs font-mono text-muted-foreground">
+            <div className="mt-3 line-clamp-2 max-h-12 overflow-hidden text-xs font-mono text-neutral-500">
               {target.systemPrompt}
             </div>
           </div>
 
           <div className="flex shrink-0 flex-row items-center gap-2 sm:flex-col sm:items-end">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              <span className="text-[11px] uppercase tracking-wider text-neutral-500">
                 Latest
               </span>
               {target.latestScan ? (
                 <ScoreBadge score={target.latestScan.overallScore} />
               ) : (
-                <span className="text-xs text-muted-foreground">–</span>
+                <span className="text-xs text-neutral-500">–</span>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -540,7 +540,7 @@ export function TargetsView() {
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 flex items-center gap-2">
         <TargetIcon className="h-5 w-5 text-red-600" />
-        <h2 className="text-xl font-bold tracking-tight text-foreground">
+        <h2 className="text-xl font-bold tracking-tight text-neutral-200">
           Targets
         </h2>
       </div>
@@ -548,7 +548,7 @@ export function TargetsView() {
       <CreateTargetForm />
 
       <div className="mt-8">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-500">
           All Targets
         </h3>
         {isLoading ? (
@@ -572,11 +572,11 @@ export function TargetsView() {
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
-              <TargetIcon className="h-8 w-8 text-muted-foreground/50" />
-              <div className="text-sm font-medium text-foreground">
+              <TargetIcon className="h-8 w-8 text-neutral-500/50" />
+              <div className="text-sm font-medium text-neutral-200">
                 No targets yet
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-neutral-500">
                 Create your first target above to start scanning.
               </div>
             </CardContent>

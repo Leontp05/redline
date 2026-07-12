@@ -6,18 +6,10 @@ import { useRedlineStore } from '@/components/redline/use-redline-store'
 /**
  * Global keyboard shortcuts.
  *
- * Single-key shortcuts (no modifier) — only active when not typing in an
- * input/textarea/select.
- *
- *   d → Dashboard
+ *   h → Home
  *   t → Targets
- *   n → New Scan
- *   r → Scan Report
- *   c → Compare
- *   h → Harden
- *   b → Billing
- *
- *   ? → Show shortcuts help (TODO)
+ *   s → Scans
+ *   , → Settings
  */
 export function useKeyboardShortcuts() {
   const setView = useRedlineStore((s) => s.setView)
@@ -25,7 +17,6 @@ export function useKeyboardShortcuts() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Ignore if user is typing in an input/textarea/select
       const target = e.target as HTMLElement
       if (
         target.tagName === 'INPUT' ||
@@ -35,37 +26,23 @@ export function useKeyboardShortcuts() {
       ) {
         return
       }
-
-      // Ignore if any modifier key is pressed (Ctrl, Alt, Meta, Shift)
-      if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) {
-        return
-      }
+      if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return
 
       switch (e.key.toLowerCase()) {
-        case 'd':
-          setView('dashboard')
+        case 'h':
+          setView('home')
           break
         case 't':
           setView('targets')
           break
-        case 'n':
-          goToNewScan()
+        case 's':
+          setView('scans')
           break
-        case 'r':
-          setView('scan-report')
-          break
-        case 'c':
-          setView('compare')
-          break
-        case 'h':
-          setView('harden')
-          break
-        case 'b':
-          setView('billing')
+        case ',':
+          setView('settings')
           break
       }
     }
-
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [setView, goToNewScan])

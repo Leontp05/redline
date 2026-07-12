@@ -3,13 +3,15 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
-import { Key, Webhook, Plus, Trash2, Loader2, Copy, Check, ExternalLink, Send } from 'lucide-react'
+import { Key, Webhook, Plus, Trash2, Loader2, Copy, Check, ExternalLink, Send, Crown } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useUsage, useCheckout, usePortal, PLAN_LIST } from '@/lib/redline-api'
 
 // ─── API Keys ───
 
@@ -385,19 +387,157 @@ function ApiDocsSection() {
   )
 }
 
+// ─── Billing/Plan ───
+
+function BillingSection() {
+  const { data: usage, isLoading } = useUsage()
+  const checkout = useCheckout()
+  const portal = usePortal()
+  const [pendingPlan, setPendingPlan] = useState<string | null>(null)
+
+  if (isLoading) return <div className="font-mono text-xs text-neutral-600">Loading...</div>
+  if (!usage) return null
+
+  const isAdmin = (usage as { isAdmin?: boolean }).isAdmin
+
+  const onUpgrade = (plan: 'pro' | 'team') => {
+    if (!usage.stripeConfigured) {
+      toast.error('Payments are in dev mode — Stripe is not configured.')
+      return
+    }
+    setPendingPlan(plan)
+    checkout.mutate(
+      { plan },
+      {
+        onSuccess: (url: string) => { window.location.href = url },
+        onError: (err: Error) => { toast.error(err.message); setPendingPlan(null) },
+      },
+    )
+  }
+
+  const onManage = () => {
+    portal.mutate(undefined, {
+      onSuccess: (url: string) => { window.location.href = url },
+      onError: (err: Error) => { toast.error(err.message) },
+    })
+  }
+
+  if (isAdmin) {
+    return (
+      <Card className="border-amber-900/40 bg-amber-950/10">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2">
+            <Crown className="h-4 w-4 text-amber-500" />
+            <span className="font-mono text-sm text-amber-400">Admin — unlimited</span>
+          </div>
+          <p className="mt-2 font-mono text-xs text-amber-700">Admin users bypass all quotas, rate limits, and feature gates.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Current plan */}
+      <Card className="border-neutral-900 bg-[#0f0f10]">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">Current Plan</div>
+              <div className="mt-1 font-serif text-2xl text-neutral-100">{usage.plan === 'team' ? 'Team' : usage.plan === 'pro' ? 'Pro' : 'Free'}</div>
+            </div>
+            {usage.subscriptionStatus === 'active' && (
+              <Badge variant="outline" className="border-emerald-900/50 bg-emerald-950/20 text-emerald-400">Active</Badge>
+            )}
+          </div>
+          <div className="mt-3 font-mono text-xs text-neutral-600">
+            {usage.scansUsed} / {usage.scansLimit === -1 ? '∞' : usage.scansLimit} scans used
+          </div>
+          {usage.subscriptionStatus === 'active' && (
+            <Button size="sm" variant="outline" className="mt-3 border-neutral-800 text-neutral-400" onClick={onManage}>
+              Manage subscription
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Plans */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {PLAN_LIST.map((plan: { id: string; name: string; priceMonthly: number; features: { scansPerMonth: number; maxTargets: number; apiConnectMode: boolean; harden: boolean } }) => {
+          const isCurrent = usage.plan === plan.id
+          const isUpgradeable = plan.id === 'pro' || plan.id === 'team'
+          return (
+            <Card key={plan.id} className={cn('border-neutral-900 bg-[#0f0f10]', plan.id === 'pro' && 'border-red-900/40')}>
+              <CardContent className="p-4">
+                <div className="font-mono text-xs text-neutral-500">{plan.name}</div>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="font-serif text-2xl text-neutral-100">${plan.priceMonthly}</span>
+                  <span className="font-mono text-[10px] text-neutral-700">/mo</span>
+                </div>
+                <div className="mt-2 font-mono text-[10px] text-neutral-600">
+                  {plan.features.scansPerMonth === -1 ? '250 scans' : `${plan.features.scansPerMonth} scans`}
+                </div>
+                {isCurrent ? (
+                  <div className="mt-3 font-mono text-[10px] text-neutral-600">Current</div>
+                ) : isUpgradeable && usage.stripeConfigured ? (
+                  <Button
+                    size="sm"
+                    className="mt-3 w-full bg-red-600 hover:bg-red-700"
+                    disabled={checkout.isPending}
+                    onClick={() => onUpgrade(plan.id as 'pro' | 'team')}
+                  >
+                    {pendingPlan === plan.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Upgrade'}
+                  </Button>
+                ) : isUpgradeable ? (
+                  <div className="mt-3 font-mono text-[10px] text-neutral-700">Dev mode</div>
+                ) : (
+                  <div className="mt-3 font-mono text-[10px] text-neutral-700">—</div>
+                )}
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main view ───
 
 export function SettingsView() {
+  const [tab, setTab] = useState<'plan' | 'api' | 'webhooks'>('plan')
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-6 flex items-center gap-2">
-        <Key className="h-5 w-5 text-red-600" />
-        <h2 className="text-xl font-bold tracking-tight text-foreground">Settings</h2>
+    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
+      <div className="mb-6">
+        <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-700">Settings</div>
+        <h1 className="font-serif text-3xl font-light text-neutral-100">Settings</h1>
       </div>
+
+      {/* Tab toggle */}
+      <div className="mb-6 flex gap-1 rounded-lg border border-neutral-900 bg-[#0f0f10] p-1">
+        {(['plan', 'api', 'webhooks'] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={cn(
+              'flex-1 rounded-md px-4 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
+              tab === t ? 'bg-neutral-800 text-neutral-200' : 'text-neutral-600 hover:text-neutral-400',
+            )}
+          >
+            {t === 'plan' ? 'Plan' : t === 'api' ? 'API Keys' : 'Webhooks'}
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-col gap-6">
-        <ApiKeysSection />
-        <WebhooksSection />
-        <ApiDocsSection />
+        {tab === 'plan' && <BillingSection />}
+        {tab === 'api' && (
+          <>
+            <ApiKeysSection />
+            <ApiDocsSection />
+          </>
+        )}
+        {tab === 'webhooks' && <WebhooksSection />}
       </div>
     </div>
   )

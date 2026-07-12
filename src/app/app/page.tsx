@@ -7,8 +7,18 @@ import { Toaster } from '@/components/ui/sonner'
 import { Loader2, ShieldAlert, Github } from 'lucide-react'
 import { LoadingScreen } from '@/components/landing/loading-screen'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
+import { motion, AnimatePresence } from 'framer-motion'
 
-// Inline Google SVG (lucide doesn't have a Google brand icon)
+import { Header } from '@/components/redline/header'
+import { useRedlineStore } from '@/components/redline/use-redline-store'
+import { HomeView } from '@/components/redline/home-view'
+import { TargetsView } from '@/components/redline/targets-view'
+import { ScansView } from '@/components/redline/scans-view'
+import { SettingsView } from '@/components/redline/settings-view'
+import { useAuthUser, type AuthUser } from '@/lib/redline-api'
+
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+
 function GoogleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" width="20" height="20" aria-hidden>
@@ -19,26 +29,6 @@ function GoogleIcon({ className }: { className?: string }) {
     </svg>
   )
 }
-
-import { Header } from '@/components/redline/header'
-import { useRedlineStore } from '@/components/redline/use-redline-store'
-import { DashboardView } from '@/components/redline/dashboard-view'
-import { TargetsView } from '@/components/redline/targets-view'
-import { NewScanView } from '@/components/redline/new-scan-view'
-import { ScanReportView } from '@/components/redline/scan-report-view'
-import { HardenView } from '@/components/redline/harden-view'
-import { BillingView } from '@/components/redline/billing-view'
-import { CompareView } from '@/components/redline/compare-view'
-import { SettingsView } from '@/components/redline/settings-view'
-import { useAuthUser, type AuthUser } from '@/lib/redline-api'
-
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card'
 
 function makeQueryClient() {
   return new QueryClient({
@@ -54,39 +44,21 @@ function makeQueryClient() {
 
 function CurrentView() {
   const view = useRedlineStore((s) => s.currentView)
-  switch (view) {
-    case 'dashboard':
-      return <DashboardView />
-    case 'targets':
-      return <TargetsView />
-    case 'new-scan':
-      return <NewScanView />
-    case 'scan-report':
-      return <ScanReportView />
-    case 'harden':
-      return <HardenView />
-    case 'billing':
-      return <BillingView />
-    case 'compare':
-      return <CompareView />
-    case 'settings':
-      return <SettingsView />
-    default:
-      return <DashboardView />
-  }
-}
-
-function FullScreenSpinner({ label }: { label: string }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm">
-        <ShieldAlert className="h-7 w-7" />
-      </span>
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        {label}
-      </div>
-    </div>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={view}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {view === 'home' && <HomeView />}
+        {view === 'targets' && <TargetsView />}
+        {view === 'scans' && <ScansView />}
+        {view === 'settings' && <SettingsView />}
+      </motion.div>
+    </AnimatePresence>
   )
 }
 
@@ -98,61 +70,49 @@ function LoginScreen() {
   const handleAdminLogin = () => {
     if (!adminKey.trim()) return
     setAdminLoading(true)
-    signIn('admin', {
-      callbackUrl: '/app',
-      password: adminKey.trim(),
-      redirect: true,
-    })
+    signIn('admin', { callbackUrl: '/app', password: adminKey.trim(), redirect: true })
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-[#0a0a0b]">
       <main className="flex flex-1 items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md border-border shadow-sm">
+        <Card className="w-full max-w-md border-neutral-900 bg-[#0f0f10]">
           <CardHeader className="items-center text-center">
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-red-600 text-white shadow-sm">
               <ShieldAlert className="h-8 w-8" />
             </span>
-            <CardTitle className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+            <CardTitle className="mt-2 font-serif text-2xl tracking-tight text-neutral-100">
               Redline
             </CardTitle>
-            <CardDescription className="text-sm">
+            <CardDescription className="font-mono text-xs text-neutral-600">
               AI Security Testing Platform
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <p className="text-center text-sm text-muted-foreground">
-              Sign in to red-team your LLM applications. Run 40 attack payloads
-              across 6 attack types, score defenses, and auto-harden system
-              prompts.
-            </p>
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => signIn('github', { callbackUrl: '/app' })}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
               >
                 <Github className="h-5 w-5" />
                 Sign in with GitHub
               </button>
               <button
                 onClick={() => signIn('google', { callbackUrl: '/app' })}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-semibold text-muted-foreground transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-neutral-800 bg-transparent px-4 text-sm font-semibold text-neutral-300 transition-colors hover:bg-neutral-900"
               >
                 <GoogleIcon className="h-5 w-5" />
                 Sign in with Google
               </button>
             </div>
-            <p className="text-center text-xs text-muted-foreground">
-              By signing in you agree to use Redline for educational and
-              authorized security testing only.
+            <p className="text-center text-[10px] text-neutral-700">
+              By signing in you agree to use Redline for educational and authorized security testing only.
             </p>
-
-            {/* Admin login (collapsible) */}
-            <div className="mt-2 border-t border-dashed border-border pt-4">
+            <div className="mt-2 border-t border-neutral-900 pt-4">
               {!showAdmin ? (
                 <button
                   onClick={() => setShowAdmin(true)}
-                  className="mx-auto block text-[10px] text-neutral-400 hover:text-muted-foreground"
+                  className="mx-auto block font-mono text-[10px] text-neutral-700 hover:text-neutral-500"
                 >
                   Admin login
                 </button>
@@ -164,13 +124,13 @@ function LoginScreen() {
                     value={adminKey}
                     onChange={(e) => setAdminKey(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
-                    className="h-9 w-full rounded-md border border-border px-3 text-xs"
+                    className="h-9 w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 font-mono text-xs text-neutral-200"
                     disabled={adminLoading}
                   />
                   <button
                     onClick={handleAdminLogin}
                     disabled={adminLoading || !adminKey.trim()}
-                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-xs font-medium text-white transition-colors hover:bg-muted disabled:opacity-50"
+                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-xs font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50"
                   >
                     {adminLoading ? (
                       <>
@@ -190,11 +150,9 @@ function LoginScreen() {
           </CardContent>
         </Card>
       </main>
-      <footer className="mt-auto border-t border-border bg-card">
-        <div className="mx-auto w-full max-w-7xl px-4 py-4 text-center text-xs text-muted-foreground sm:px-6">
-          <span className="font-semibold text-red-600">Redline</span> — AI
-          Security Testing Platform. Built for red-teaming LLM applications. |
-          Educational use only.
+      <footer className="mt-auto border-t border-neutral-900 py-4">
+        <div className="mx-auto w-full max-w-7xl px-4 text-center font-mono text-[10px] text-neutral-700 sm:px-6">
+          <span className="text-red-600">Redline</span> — Educational use only
         </div>
       </footer>
     </div>
@@ -204,17 +162,12 @@ function LoginScreen() {
 function AppShell({ user, children }: { user: AuthUser; children: ReactNode }) {
   useKeyboardShortcuts()
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-[#0a0a0b] text-neutral-200">
       <Header user={user} />
       <main className="flex-1">{children}</main>
-      <footer className="mt-auto border-t border-border bg-card">
-        <div className="mx-auto w-full max-w-7xl px-4 py-4 text-center text-xs text-muted-foreground sm:px-6">
-          <span className="font-semibold text-red-600">Redline</span> — AI
-          Security Testing Platform. Built for red-teaming LLM applications. |
-          Educational use only. |
-          <span className="ml-1 hidden sm:inline">
-            Shortcuts: <kbd className="rounded bg-muted px-1 font-mono text-[10px]">d</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">t</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">n</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">r</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">c</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">h</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">b</kbd>
-          </span>
+      <footer className="mt-auto border-t border-neutral-900 py-4">
+        <div className="mx-auto w-full max-w-7xl px-4 text-center font-mono text-[10px] text-neutral-700 sm:px-6">
+          <span className="text-red-600">Redline</span> — Educational use only
         </div>
       </footer>
     </div>
@@ -230,16 +183,16 @@ function AuthenticatedApp() {
 
   if (isError) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#0a0a0b] px-4 text-center">
+        <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-600 text-white">
           <ShieldAlert className="h-7 w-7" />
         </span>
-        <div className="text-sm text-red-600">
+        <div className="font-mono text-sm text-red-500">
           {error?.message ?? 'Failed to load session.'}
         </div>
         <button
           onClick={() => signIn('github', { callbackUrl: '/app' })}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-semibold text-white hover:bg-muted"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-semibold text-white hover:bg-neutral-800"
         >
           <Github className="h-4 w-4" />
           Sign in with GitHub
@@ -257,7 +210,6 @@ function AuthenticatedApp() {
 
 export default function AppPage() {
   const [queryClient] = useState(() => makeQueryClient())
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthenticatedApp />

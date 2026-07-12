@@ -20,7 +20,7 @@ export function CategoryBars({ scores, className, compact }: CategoryBarsProps) 
 
   if (entries.length === 0) {
     return (
-      <div className={cn('text-sm text-muted-foreground', className)}>
+      <div className={cn('text-sm text-neutral-500', className)}>
         No category scores available.
       </div>
     )
@@ -39,10 +39,10 @@ export function CategoryBars({ scores, className, compact }: CategoryBarsProps) 
         return (
           <div key={cat} className="flex flex-col gap-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium capitalize text-foreground">
+              <span className="font-medium capitalize text-neutral-200">
                 {cat}
               </span>
-              <span className="tabular-nums text-muted-foreground">
+              <span className="tabular-nums text-neutral-500">
                 {score as number}
               </span>
             </div>
