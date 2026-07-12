@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
-import { Key, Webhook, Plus, Trash2, Loader2, Copy, Check, ExternalLink } from 'lucide-react'
+import { Key, Webhook, Plus, Trash2, Loader2, Copy, Check, ExternalLink, Send } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -199,6 +199,26 @@ function WebhooksSection() {
     },
   })
 
+  const testWebhook = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch('/api/webhooks/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      return res.json()
+    },
+    onSuccess: (data) => {
+      if (data.ok) {
+        toast.success(data.message || 'Test message sent!')
+      } else {
+        toast.error(data.error || 'Test failed')
+      }
+      qc.invalidateQueries({ queryKey: ['webhooks'] })
+    },
+    onError: () => toast.error('Failed to send test'),
+  })
+
   return (
     <Card>
       <CardHeader className="border-b">
@@ -207,7 +227,7 @@ function WebhooksSection() {
           Webhooks
         </CardTitle>
         <CardDescription className="text-xs">
-          Redline POSTs scan results to your webhook URL when scans complete. Verify the signature using the secret.
+          Redline posts scan results to your webhook URL when scans complete. Slack + Discord URLs are auto-detected and formatted as rich messages. Custom URLs receive signed JSON.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-5">
@@ -264,14 +284,26 @@ function WebhooksSection() {
                     {w.lastFiredAt && <span className="ml-2">· {formatDistanceToNow(new Date(w.lastFiredAt), { addSuffix: true })}</span>}
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-red-500/30 text-red-600 hover:bg-red-500/10"
-                  onClick={() => deleteWebhook.mutate(w.id)}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
+                <div className="flex shrink-0 gap-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+                    onClick={() => testWebhook.mutate(w.id)}
+                    disabled={testWebhook.isPending}
+                  >
+                    {testWebhook.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                    <span className="ml-1 hidden sm:inline">Test</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-red-500/30 text-red-600 hover:bg-red-500/10"
+                    onClick={() => deleteWebhook.mutate(w.id)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             ))
           ) : (
