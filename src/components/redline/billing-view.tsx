@@ -104,7 +104,7 @@ function PlanBadge({ plan }: { plan: Plan }) {
       ? 'border-amber-200 bg-amber-50 text-amber-800'
       : plan === 'pro'
         ? 'border-red-200 bg-red-50 text-red-700'
-        : 'border-neutral-200 bg-neutral-50 text-neutral-700'
+        : 'border-border bg-background text-muted-foreground'
   const label = plan === 'team' ? 'Team' : plan === 'pro' ? 'Pro' : 'Free'
   return (
     <Badge variant="outline" className={cn('font-semibold uppercase', cls)}>
@@ -120,7 +120,7 @@ function SubStatusPill({ status }: { status: string | null }) {
       ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
       : status === 'past_due'
         ? 'border-red-200 bg-red-50 text-red-700'
-        : 'border-neutral-200 bg-neutral-50 text-neutral-700'
+        : 'border-border bg-background text-muted-foreground'
   const label =
     status === 'past_due' ? 'Past due — update payment' : status === 'canceled' ? 'Canceled' : 'Active'
   return (
@@ -152,7 +152,7 @@ function UsageProgress({
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
-        <span className="text-xs tabular-nums text-neutral-700">
+        <span className="text-xs tabular-nums text-muted-foreground">
           <span className={cn('font-semibold', atLimit && 'text-red-700')}>
             {used}
           </span>
@@ -166,7 +166,7 @@ function UsageProgress({
           'h-2',
           atLimit
             ? 'bg-red-100 [&>[data-slot=progress-indicator]]:bg-red-600'
-            : 'bg-neutral-100 [&>[data-slot=progress-indicator]]:bg-red-500',
+            : 'bg-muted [&>[data-slot=progress-indicator]]:bg-red-500',
         )}
       />
       {atLimit && (
@@ -288,7 +288,7 @@ function PlanCard({
         'w-full',
         popular
           ? 'bg-red-600 hover:bg-red-700'
-          : 'border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50',
+          : 'border border-border bg-card text-foreground hover:bg-background',
       )}
     >
       {checkoutPending || managePending ? (
@@ -337,7 +337,7 @@ function PlanCard({
                 'flex h-9 w-9 items-center justify-center rounded-lg',
                 popular
                   ? 'bg-red-100 text-red-700'
-                  : 'bg-neutral-100 text-neutral-700',
+                  : 'bg-muted text-muted-foreground',
               )}
             >
               <Icon className="h-5 w-5" />
@@ -354,7 +354,7 @@ function PlanCard({
           )}
         </div>
         <div className="mt-2 flex items-baseline gap-1">
-          <span className="text-3xl font-bold tracking-tight text-neutral-900">
+          <span className="text-3xl font-bold tracking-tight text-foreground">
             {plan.price}
           </span>
           <span className="text-sm text-muted-foreground">{plan.cadence}</span>
@@ -433,7 +433,7 @@ function CurrentPlanBanner({ usage }: { usage: UsageInfo }) {
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <Crown className={isAdmin ? 'h-5 w-5 text-amber-600' : 'h-5 w-5 text-red-600'} />
-            <span className="text-base font-semibold text-neutral-900">
+            <span className="text-base font-semibold text-foreground">
               {isAdmin ? 'Admin access' : `You're on the ${planName} plan`}
             </span>
             {isAdmin ? (
@@ -494,7 +494,7 @@ function BillingSkeleton() {
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 flex items-center gap-2">
         <CreditCard className="h-5 w-5 text-red-600" />
-        <h2 className="text-xl font-bold tracking-tight text-neutral-900">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           Billing
         </h2>
       </div>
@@ -592,7 +592,7 @@ export function BillingView() {
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 flex items-center gap-2">
         <CreditCard className="h-5 w-5 text-red-600" />
-        <h2 className="text-xl font-bold tracking-tight text-neutral-900">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           Billing
         </h2>
       </div>
@@ -638,8 +638,8 @@ export function BillingView() {
         </div>
       </div>
 
-      <div className="mt-8 rounded-lg border border-neutral-200 bg-white p-4 text-xs text-muted-foreground">
-        <span className="font-semibold text-neutral-800">Note:</span> Plan
+      <div className="mt-8 rounded-lg border border-border bg-card p-4 text-xs text-muted-foreground">
+        <span className="font-semibold text-foreground">Note:</span> Plan
         limits are enforced server-side on every scan and target creation. If
         you hit a limit, you&apos;ll see a clear upgrade prompt in the
         affected view. Payments are processed securely by Stripe — we never

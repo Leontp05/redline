@@ -59,7 +59,7 @@ function StatCard({ icon: Icon, label, value, hint, accent = 'red' }: StatCardPr
         ? 'bg-amber-50 text-amber-600'
         : accent === 'emerald'
           ? 'bg-emerald-50 text-emerald-600'
-          : 'bg-neutral-100 text-neutral-600'
+          : 'bg-muted text-muted-foreground'
   return (
     <Card className="gap-0">
       <CardContent className="p-6">
@@ -68,7 +68,7 @@ function StatCard({ icon: Icon, label, value, hint, accent = 'red' }: StatCardPr
             <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {label}
             </div>
-            <div className="mt-2 text-3xl font-bold tabular-nums text-neutral-900">
+            <div className="mt-2 text-3xl font-bold tabular-nums text-foreground">
               {value}
             </div>
             {hint && (
@@ -141,7 +141,7 @@ function RecentScansTable({ scans }: { scans: ScanListItem[] }) {
                 onClick={() => goToScanReport(scan.id)}
                 className="cursor-pointer hover:bg-red-50/40"
               >
-                <TableCell className="font-medium text-neutral-900">
+                <TableCell className="font-medium text-foreground">
                   <div className="flex flex-col">
                     <span className="truncate">{scan.target.name}</span>
                     {scan.note && (
@@ -188,7 +188,7 @@ function UsageIndicator() {
 
   if (isLoading) {
     return (
-      <Card className="mb-8 border-neutral-200 bg-white">
+      <Card className="mb-8 border-border bg-card">
         <CardContent className="flex items-center gap-3 p-4">
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           <Skeleton className="h-4 w-48" />
@@ -220,7 +220,7 @@ function UsageIndicator() {
         'mb-8',
         atLimit
           ? 'border-red-200 bg-red-50/60'
-          : 'border-neutral-200 bg-white',
+          : 'border-border bg-card',
       )}
     >
       <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -230,21 +230,21 @@ function UsageIndicator() {
               className={cn(
                 'flex h-7 w-7 items-center justify-center rounded-md',
                 usage.plan === 'free'
-                  ? 'bg-neutral-100 text-neutral-600'
+                  ? 'bg-muted text-muted-foreground'
                   : 'bg-red-100 text-red-700',
               )}
             >
               <Crown className="h-4 w-4" />
             </span>
             <div className="flex items-baseline gap-1.5 text-sm">
-              <span className="font-semibold text-neutral-900">
+              <span className="font-semibold text-foreground">
                 Plan: {planName}
               </span>
               <span className="text-muted-foreground">·</span>
               <span
                 className={cn(
                   'tabular-nums',
-                  atLimit ? 'font-semibold text-red-700' : 'text-neutral-700',
+                  atLimit ? 'font-semibold text-red-700' : 'text-muted-foreground',
                 )}
               >
                 {scansLabel}
@@ -253,7 +253,7 @@ function UsageIndicator() {
           </div>
           {!unlimited && (
             <div className="flex items-center gap-2 sm:w-32">
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className={cn(
                     'h-full rounded-full transition-all',
@@ -301,14 +301,14 @@ export function DashboardView() {
       {/* Hero */}
       <section className="mb-8 rounded-xl border border-red-100 bg-gradient-to-br from-red-50 via-white to-white p-6 sm:p-8">
         <div className="flex flex-col gap-4">
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-700">
+          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-red-200 bg-card px-3 py-1 text-xs font-medium text-red-700">
             <Crosshair className="h-3.5 w-3.5" />
             Red-team your LLM apps
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Redline — AI Security Testing Platform
           </h1>
-          <p className="max-w-3xl text-sm text-neutral-600 sm:text-base">
+          <p className="max-w-3xl text-sm text-muted-foreground sm:text-base">
             Red-team your LLM apps. Run 40+ attack payloads, score
             vulnerabilities, auto-harden, re-test.
           </p>
@@ -338,41 +338,41 @@ export function DashboardView() {
                 <FlaskConical className="h-5 w-5" />
               </span>
               <div className="flex-1">
-                <h2 className="text-base font-semibold text-neutral-900">
+                <h2 className="text-base font-semibold text-foreground">
                   Welcome to Redline! Let&apos;s run your first scan.
                 </h2>
-                <p className="mt-1 text-sm text-neutral-600">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Get started in 3 steps — takes about 2 minutes.
                 </p>
                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <button
                     onClick={() => setView('targets')}
-                    className="flex items-start gap-3 rounded-lg border border-neutral-200 bg-white p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-50"
+                    className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-50"
                   >
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">1</span>
                     <div>
-                      <div className="text-xs font-semibold text-neutral-900">Create a target</div>
-                      <div className="text-[11px] text-neutral-500">Paste your LLM&apos;s system prompt</div>
+                      <div className="text-xs font-semibold text-foreground">Create a target</div>
+                      <div className="text-[11px] text-muted-foreground">Paste your LLM&apos;s system prompt</div>
                     </div>
                   </button>
                   <button
                     onClick={() => goToNewScan()}
-                    className="flex items-start gap-3 rounded-lg border border-neutral-200 bg-white p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-50"
+                    className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-50"
                   >
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">2</span>
                     <div>
-                      <div className="text-xs font-semibold text-neutral-900">Run a scan</div>
-                      <div className="text-[11px] text-neutral-500">40 attack payloads fire automatically</div>
+                      <div className="text-xs font-semibold text-foreground">Run a scan</div>
+                      <div className="text-[11px] text-muted-foreground">40 attack payloads fire automatically</div>
                     </div>
                   </button>
                   <button
                     onClick={() => setView('billing')}
-                    className="flex items-start gap-3 rounded-lg border border-neutral-200 bg-white p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-50"
+                    className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-50"
                   >
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">3</span>
                     <div>
-                      <div className="text-xs font-semibold text-neutral-900">Harden & re-test</div>
-                      <div className="text-[11px] text-neutral-500">Auto-fix vulnerabilities, see the delta</div>
+                      <div className="text-xs font-semibold text-foreground">Harden & re-test</div>
+                      <div className="text-[11px] text-muted-foreground">Auto-fix vulnerabilities, see the delta</div>
                     </div>
                   </button>
                 </div>

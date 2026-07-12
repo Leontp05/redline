@@ -11,6 +11,7 @@ import {
   Shield,
   CreditCard,
   LogOut,
+  GitCompare,
 } from 'lucide-react'
 import { useRedlineStore, type RedlineView } from './use-redline-store'
 import type { AuthUser } from '@/lib/redline-api'
@@ -38,7 +39,8 @@ const TABS: TabDef[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'targets', label: 'Targets', icon: ListChecks },
   { key: 'new-scan', label: 'New Scan', icon: Crosshair },
-  { key: 'scan-report', label: 'Scan Report', icon: FlaskConical },
+  { key: 'scan-report', label: 'Report', icon: FlaskConical },
+  { key: 'compare', label: 'Compare', icon: GitCompare },
   { key: 'harden', label: 'Harden', icon: Shield },
   { key: 'billing', label: 'Billing', icon: CreditCard },
 ]
@@ -61,7 +63,7 @@ export function Header({ user }: { user: AuthUser }) {
   const setView = useRedlineStore((s) => s.setView)
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-2 px-4 sm:px-6">
         {/* Logo / wordmark */}
         <button
@@ -74,7 +76,7 @@ export function Header({ user }: { user: AuthUser }) {
             <ShieldAlert className="h-5 w-5" />
           </span>
           <span className="flex flex-col items-start leading-none">
-            <span className="text-base font-bold tracking-tight text-neutral-900">
+            <span className="text-base font-bold tracking-tight text-foreground">
               Redline
             </span>
             <span className="hidden text-[10px] font-medium uppercase tracking-wider text-red-600 sm:block">
@@ -99,7 +101,7 @@ export function Header({ user }: { user: AuthUser }) {
                     'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm',
                     active
                       ? 'bg-red-50 text-red-700'
-                      : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900',
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -113,7 +115,7 @@ export function Header({ user }: { user: AuthUser }) {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="ml-1 flex items-center gap-2 rounded-full border border-neutral-200 bg-white py-1 pl-1 pr-2 outline-none transition-colors hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-red-500/40"
+                className="ml-1 flex items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2 outline-none transition-colors hover:bg-background focus-visible:ring-2 focus-visible:ring-red-500/40"
                 aria-label="User menu"
               >
                 <Avatar className="h-7 w-7">
@@ -124,7 +126,7 @@ export function Header({ user }: { user: AuthUser }) {
                     {user.isAdmin ? '★' : initialsFrom(user)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden max-w-[120px] truncate text-xs font-medium text-neutral-700 sm:block">
+                <span className="hidden max-w-[120px] truncate text-xs font-medium text-muted-foreground sm:block">
                   {user.name ?? user.email ?? 'Account'}
                   {user.isAdmin && (
                     <span className="ml-1 rounded bg-amber-100 px-1 py-0.5 text-[9px] font-bold uppercase text-amber-700">
@@ -136,7 +138,7 @@ export function Header({ user }: { user: AuthUser }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel className="flex flex-col gap-0.5">
-                <span className="truncate text-sm font-semibold text-neutral-900">
+                <span className="truncate text-sm font-semibold text-foreground">
                   {user.name ?? 'Signed in'}
                 </span>
                 {user.email && (

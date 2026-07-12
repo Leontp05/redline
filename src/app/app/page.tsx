@@ -27,6 +27,7 @@ import { NewScanView } from '@/components/redline/new-scan-view'
 import { ScanReportView } from '@/components/redline/scan-report-view'
 import { HardenView } from '@/components/redline/harden-view'
 import { BillingView } from '@/components/redline/billing-view'
+import { CompareView } from '@/components/redline/compare-view'
 import { useAuthUser, type AuthUser } from '@/lib/redline-api'
 
 import {
@@ -64,6 +65,8 @@ function CurrentView() {
       return <HardenView />
     case 'billing':
       return <BillingView />
+    case 'compare':
+      return <CompareView />
     default:
       return <DashboardView />
   }
@@ -71,7 +74,7 @@ function CurrentView() {
 
 function FullScreenSpinner({ label }: { label: string }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-neutral-50 px-4 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4 text-center">
       <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm">
         <ShieldAlert className="h-7 w-7" />
       </span>
@@ -99,14 +102,14 @@ function LoginScreen() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50">
+    <div className="flex min-h-screen flex-col bg-background">
       <main className="flex flex-1 items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md border-neutral-200 shadow-sm">
+        <Card className="w-full max-w-md border-border shadow-sm">
           <CardHeader className="items-center text-center">
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-red-600 text-white shadow-sm">
               <ShieldAlert className="h-8 w-8" />
             </span>
-            <CardTitle className="mt-2 text-2xl font-bold tracking-tight text-neutral-900">
+            <CardTitle className="mt-2 text-2xl font-bold tracking-tight text-foreground">
               Redline
             </CardTitle>
             <CardDescription className="text-sm">
@@ -122,14 +125,14 @@ function LoginScreen() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => signIn('github', { callbackUrl: '/app' })}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
               >
                 <Github className="h-5 w-5" />
                 Sign in with GitHub
               </button>
               <button
                 onClick={() => signIn('google', { callbackUrl: '/app' })}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-semibold text-muted-foreground transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
               >
                 <GoogleIcon className="h-5 w-5" />
                 Sign in with Google
@@ -141,11 +144,11 @@ function LoginScreen() {
             </p>
 
             {/* Admin login (collapsible) */}
-            <div className="mt-2 border-t border-dashed border-neutral-200 pt-4">
+            <div className="mt-2 border-t border-dashed border-border pt-4">
               {!showAdmin ? (
                 <button
                   onClick={() => setShowAdmin(true)}
-                  className="mx-auto block text-[10px] text-neutral-400 hover:text-neutral-600"
+                  className="mx-auto block text-[10px] text-neutral-400 hover:text-muted-foreground"
                 >
                   Admin login
                 </button>
@@ -157,13 +160,13 @@ function LoginScreen() {
                     value={adminKey}
                     onChange={(e) => setAdminKey(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
-                    className="h-9 w-full rounded-md border border-neutral-300 px-3 text-xs"
+                    className="h-9 w-full rounded-md border border-border px-3 text-xs"
                     disabled={adminLoading}
                   />
                   <button
                     onClick={handleAdminLogin}
                     disabled={adminLoading || !adminKey.trim()}
-                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-xs font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50"
+                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-xs font-medium text-white transition-colors hover:bg-muted disabled:opacity-50"
                   >
                     {adminLoading ? (
                       <>
@@ -183,7 +186,7 @@ function LoginScreen() {
           </CardContent>
         </Card>
       </main>
-      <footer className="mt-auto border-t border-neutral-200 bg-white">
+      <footer className="mt-auto border-t border-border bg-card">
         <div className="mx-auto w-full max-w-7xl px-4 py-4 text-center text-xs text-muted-foreground sm:px-6">
           <span className="font-semibold text-red-600">Redline</span> — AI
           Security Testing Platform. Built for red-teaming LLM applications. |
@@ -196,10 +199,10 @@ function LoginScreen() {
 
 function AppShell({ user, children }: { user: AuthUser; children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Header user={user} />
       <main className="flex-1">{children}</main>
-      <footer className="mt-auto border-t border-neutral-200 bg-white">
+      <footer className="mt-auto border-t border-border bg-card">
         <div className="mx-auto w-full max-w-7xl px-4 py-4 text-center text-xs text-muted-foreground sm:px-6">
           <span className="font-semibold text-red-600">Redline</span> — AI
           Security Testing Platform. Built for red-teaming LLM applications. |
@@ -219,7 +222,7 @@ function AuthenticatedApp() {
 
   if (isError) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-neutral-50 px-4 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4 text-center">
         <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm">
           <ShieldAlert className="h-7 w-7" />
         </span>
@@ -228,7 +231,7 @@ function AuthenticatedApp() {
         </div>
         <button
           onClick={() => signIn('github', { callbackUrl: '/app' })}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-semibold text-white hover:bg-neutral-800"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-semibold text-white hover:bg-muted"
         >
           <Github className="h-4 w-4" />
           Sign in with GitHub

@@ -50,6 +50,7 @@ import {
   JfetchError,
   type TargetListItem,
 } from '@/lib/redline-api'
+import { TARGET_TEMPLATES } from '@/lib/target-templates'
 import { useRedlineStore } from './use-redline-store'
 import { ScoreBadge } from './score-badge'
 
@@ -90,7 +91,15 @@ function CreateTargetForm() {
   const [apiHeaders, setApiHeaders] = useState('')
   const [apiModel, setApiModel] = useState('')
   const [quotaError, setQuotaError] = useState<string | null>(null)
+  const [showTemplates, setShowTemplates] = useState(false)
   const createTarget = useCreateTarget()
+
+  const applyTemplate = (tpl: typeof TARGET_TEMPLATES[0]) => {
+    setName(tpl.name === 'Custom Prompt' ? '' : tpl.name)
+    setSystemPrompt(tpl.systemPrompt)
+    setContext(tpl.context || '')
+    setShowTemplates(false)
+  }
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -154,6 +163,36 @@ function CreateTargetForm() {
         </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
+          {/* Template picker */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <Label>Quick Start Templates</Label>
+              <button
+                type="button"
+                onClick={() => setShowTemplates(!showTemplates)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                {showTemplates ? 'Hide' : 'Show'} templates
+              </button>
+            </div>
+            {showTemplates && (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {TARGET_TEMPLATES.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => applyTemplate(tpl)}
+                    className="flex flex-col items-start gap-1 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-red-500/50 hover:bg-muted"
+                  >
+                    <span className="text-lg">{tpl.icon}</span>
+                    <span className="text-xs font-semibold text-foreground">{tpl.name}</span>
+                    <span className="text-[10px] text-muted-foreground">{tpl.description}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Mode toggle */}
           <div className="flex flex-col gap-1.5">
             <Label>Target Mode</Label>
@@ -165,7 +204,7 @@ function CreateTargetForm() {
                 className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
                   mode === 'simulate'
                     ? 'border-red-300 bg-red-50'
-                    : 'border-neutral-200 bg-white hover:bg-neutral-50'
+                    : 'border-border bg-card hover:bg-background'
                 }`}
               >
                 <FlaskConical
@@ -174,7 +213,7 @@ function CreateTargetForm() {
                   }`}
                 />
                 <div>
-                  <div className="text-sm font-semibold text-neutral-900">
+                  <div className="text-sm font-semibold text-foreground">
                     Simulate
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -189,7 +228,7 @@ function CreateTargetForm() {
                 className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
                   mode === 'api'
                     ? 'border-red-300 bg-red-50'
-                    : 'border-neutral-200 bg-white hover:bg-neutral-50'
+                    : 'border-border bg-card hover:bg-background'
                 }`}
               >
                 <Globe
@@ -198,7 +237,7 @@ function CreateTargetForm() {
                   }`}
                 />
                 <div>
-                  <div className="text-sm font-semibold text-neutral-900">
+                  <div className="text-sm font-semibold text-foreground">
                     API Connect
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -357,7 +396,7 @@ function TargetRow({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate text-base font-semibold text-neutral-900">
+              <h3 className="truncate text-base font-semibold text-foreground">
                 {target.name}
               </h3>
               <Badge variant="secondary" className="font-mono">
@@ -374,7 +413,7 @@ function TargetRow({
               ) : (
                 <Badge
                   variant="outline"
-                  className="border-neutral-200 bg-neutral-50 text-neutral-600"
+                  className="border-border bg-background text-muted-foreground"
                 >
                   <FlaskConical className="h-3 w-3" />
                   Simulate
@@ -501,7 +540,7 @@ export function TargetsView() {
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 flex items-center gap-2">
         <TargetIcon className="h-5 w-5 text-red-600" />
-        <h2 className="text-xl font-bold tracking-tight text-neutral-900">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           Targets
         </h2>
       </div>

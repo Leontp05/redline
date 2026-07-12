@@ -74,7 +74,7 @@ function HardenRewritingCard() {
       <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
         <Loader2 className="h-10 w-10 animate-spin text-red-600" />
         <div>
-          <div className="text-base font-semibold text-neutral-900">
+          <div className="text-base font-semibold text-foreground">
             Rewriting the system prompt...
           </div>
           <div className="mt-1 max-w-md text-sm text-muted-foreground">
@@ -101,15 +101,15 @@ function HardenPollingCard({ completed }: { completed: number }) {
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Loader2 className="h-5 w-5 animate-spin text-red-600" />
-            <span className="text-base font-semibold text-neutral-900">
+            <span className="text-base font-semibold text-foreground">
               Hardened scan in progress...
             </span>
-            <span className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-700">
+            <span className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-700">
               <Activity className="h-3 w-3" />
               live
             </span>
           </div>
-          <div className="text-sm font-medium tabular-nums text-neutral-700">
+          <div className="text-sm font-medium tabular-nums text-muted-foreground">
             {completed} of {TOTAL_PAYLOADS} payloads completed
           </div>
         </div>
@@ -203,7 +203,7 @@ function DeltaIndicator({
 }) {
   if (before == null || after == null) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
         <Minus className="h-4 w-4" />
         Score data unavailable
       </div>
@@ -280,14 +280,14 @@ function VulnerabilitiesClosedTable({
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-md border border-neutral-200 bg-neutral-50 p-6 text-center text-sm text-muted-foreground">
+      <div className="rounded-md border border-border bg-background p-6 text-center text-sm text-muted-foreground">
         No vulnerabilities were present before hardening.
       </div>
     )
   }
 
   return (
-    <div className="max-h-96 overflow-y-auto rounded-md border border-neutral-200">
+    <div className="max-h-96 overflow-y-auto rounded-md border border-border">
       <Table>
         <TableHeader className="sticky top-0 z-10 bg-card">
           <TableRow>
@@ -303,7 +303,7 @@ function VulnerabilitiesClosedTable({
             const closed = r.wasVuln && !r.nowVuln
             return (
               <TableRow key={r.key}>
-                <TableCell className="font-medium text-neutral-900">
+                <TableCell className="font-medium text-foreground">
                   {r.name}
                 </TableCell>
                 <TableCell>
@@ -548,7 +548,7 @@ export function HardenView() {
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 flex items-center gap-2">
         <Shield className="h-5 w-5 text-red-600" />
-        <h2 className="text-xl font-bold tracking-tight text-neutral-900">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           Harden
         </h2>
       </div>
@@ -614,14 +614,14 @@ export function HardenView() {
               </Button>
             </div>
           ) : (
-            <div className="rounded-md border border-dashed border-neutral-300 p-4 text-center text-sm text-muted-foreground">
+            <div className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
               No scans available. Run a scan first.
             </div>
           )}
 
           {selectedScanSummary && (
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
+              <div className="rounded-md border border-border bg-background p-3">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                   Overall score
                 </div>
@@ -629,19 +629,19 @@ export function HardenView() {
                   <ScoreBadge score={selectedScanSummary.overallScore} />
                 </div>
               </div>
-              <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
+              <div className="rounded-md border border-border bg-background p-3">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                   Results
                 </div>
-                <div className="mt-1 text-sm font-semibold tabular-nums text-neutral-900">
+                <div className="mt-1 text-sm font-semibold tabular-nums text-foreground">
                   {selectedScanSummary.resultCount}
                 </div>
               </div>
-              <div className="col-span-2 rounded-md border border-neutral-200 bg-neutral-50 p-3 sm:col-span-1">
+              <div className="col-span-2 rounded-md border border-border bg-background p-3 sm:col-span-1">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                   Target
                 </div>
-                <div className="mt-1 truncate text-sm font-semibold text-neutral-900">
+                <div className="mt-1 truncate text-sm font-semibold text-foreground">
                   {selectedScanSummary.target.name}
                 </div>
               </div>
@@ -729,7 +729,7 @@ export function HardenView() {
         !originalLoading &&
         !hardenedLoading && (
           <div className="mt-8">
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-bold tracking-tight text-neutral-900">
+            <h3 className="mb-4 flex items-center gap-2 text-lg font-bold tracking-tight text-foreground">
               <Sparkles className="h-5 w-5 text-emerald-600" />
               Before / After
             </h3>

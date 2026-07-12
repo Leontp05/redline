@@ -9,6 +9,7 @@ export type RedlineView =
   | 'scan-report'
   | 'harden'
   | 'billing'
+  | 'compare'
 
 interface RedlineState {
   currentView: RedlineView

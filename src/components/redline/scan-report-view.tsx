@@ -85,15 +85,15 @@ function LiveProgressCard({ completed }: { completed: number }) {
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Loader2 className="h-5 w-5 animate-spin text-red-600" />
-            <span className="text-base font-semibold text-neutral-900">
+            <span className="text-base font-semibold text-foreground">
               Scan in progress...
             </span>
-            <span className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-700">
+            <span className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-700">
               <Activity className="h-3 w-3" />
               live
             </span>
           </div>
-          <div className="text-sm font-medium tabular-nums text-neutral-700">
+          <div className="text-sm font-medium tabular-nums text-muted-foreground">
             {completed} of {TOTAL_PAYLOADS} payloads completed
           </div>
         </div>
@@ -155,7 +155,7 @@ function ConversationThread({ turns }: { turns: ScanResult['conversation'] }) {
               'rounded-md border p-2 text-xs',
               isUser
                 ? 'border-red-200 bg-red-50/50'
-                : 'border-neutral-200 bg-neutral-50',
+                : 'border-border bg-background',
             )}
           >
             <div className="mb-1 flex items-center gap-1.5">
@@ -164,8 +164,8 @@ function ConversationThread({ turns }: { turns: ScanResult['conversation'] }) {
                 className={cn(
                   'text-[10px] font-semibold uppercase',
                   isUser
-                    ? 'border-red-200 bg-white text-red-700'
-                    : 'border-neutral-300 bg-white text-neutral-700',
+                    ? 'border-red-200 bg-card text-red-700'
+                    : 'border-border bg-card text-muted-foreground',
                 )}
               >
                 {turn.role}
@@ -174,7 +174,7 @@ function ConversationThread({ turns }: { turns: ScanResult['conversation'] }) {
                 turn {i + 1}
               </span>
             </div>
-            <pre className="whitespace-pre-wrap break-words font-mono text-[11px] text-neutral-700">
+            <pre className="whitespace-pre-wrap break-words font-mono text-[11px] text-muted-foreground">
               {turn.content}
             </pre>
           </div>
@@ -205,7 +205,7 @@ function ResultRow({ result }: { result: ScanResult }) {
         </TableCell>
         <TableCell>
           <div className="flex flex-col gap-1">
-            <span className="font-medium text-neutral-900">
+            <span className="font-medium text-foreground">
               {result.attackType.name}
             </span>
             <Badge variant="outline" className="w-fit text-[10px] capitalize">
@@ -213,7 +213,7 @@ function ResultRow({ result }: { result: ScanResult }) {
             </Badge>
           </div>
         </TableCell>
-        <TableCell className="text-sm text-neutral-700">
+        <TableCell className="text-sm text-muted-foreground">
           {result.technique}
         </TableCell>
         <TableCell>
@@ -244,14 +244,14 @@ function ResultRow({ result }: { result: ScanResult }) {
         </TableCell>
       </TableRow>
       {expanded && (
-        <TableRow className="bg-neutral-50/60 hover:bg-neutral-50/60">
+        <TableRow className="bg-background/60 hover:bg-background/60">
           <TableCell colSpan={6} className="p-4">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <div>
                 <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Payload sent
                 </div>
-                <pre className="max-h-60 overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-neutral-200 bg-white p-3 font-mono text-[11px] text-neutral-700">
+                <pre className="max-h-60 overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-border bg-card p-3 font-mono text-[11px] text-muted-foreground">
                   {result.payload}
                 </pre>
               </div>
@@ -259,7 +259,7 @@ function ResultRow({ result }: { result: ScanResult }) {
                 <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Model response
                 </div>
-                <pre className="max-h-60 overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-neutral-200 bg-white p-3 font-mono text-[11px] text-neutral-700">
+                <pre className="max-h-60 overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-border bg-card p-3 font-mono text-[11px] text-muted-foreground">
                   {result.response || '—'}
                 </pre>
               </div>
@@ -456,7 +456,7 @@ export function ScanReportView() {
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-xl font-bold tracking-tight text-neutral-900 sm:text-2xl">
+            <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
               {scan.target.name}
             </h2>
             <StatusBadge status={scan.status} />

@@ -70,7 +70,7 @@ function ScanStartingCard({ payloadCount }: { payloadCount: number }) {
       <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
         <Loader2 className="h-10 w-10 animate-spin text-red-600" />
         <div>
-          <div className="text-base font-semibold text-neutral-900">
+          <div className="text-base font-semibold text-foreground">
             Starting scan...
           </div>
           <div className="mt-1 max-w-md text-sm text-muted-foreground">
@@ -138,7 +138,7 @@ function ApiModeLockedCard() {
             size="sm"
             variant="outline"
             onClick={goToBilling}
-            className="mt-3 border-amber-300 bg-white text-amber-800 hover:bg-amber-100"
+            className="mt-3 border-amber-300 bg-card text-amber-800 hover:bg-amber-100"
           >
             <Crown className="h-3.5 w-3.5" />
             View plans
@@ -165,7 +165,7 @@ function AttackCard({
         'flex cursor-pointer flex-col gap-2 rounded-lg border p-4 transition-colors',
         checked
           ? 'border-red-300 bg-red-50/50'
-          : 'border-neutral-200 bg-white hover:bg-neutral-50',
+          : 'border-border bg-card hover:bg-background',
       )}
     >
       <div className="flex items-start gap-3">
@@ -177,7 +177,7 @@ function AttackCard({
         />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-neutral-900">
+            <span className="font-semibold text-foreground">
               {attack.name}
             </span>
             <Badge variant="outline" className="text-[10px] capitalize">
@@ -391,7 +391,7 @@ export function NewScanView() {
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 flex items-center gap-2">
         <Crosshair className="h-5 w-5 text-red-600" />
-        <h2 className="text-xl font-bold tracking-tight text-neutral-900">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           New Scan
         </h2>
       </div>
@@ -431,7 +431,7 @@ export function NewScanView() {
                   </SelectContent>
                 </Select>
               ) : (
-                <div className="rounded-md border border-dashed border-neutral-300 p-4 text-center text-sm text-muted-foreground">
+                <div className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
                   No targets yet. Create one in the Targets tab first.
                 </div>
               )}
@@ -449,7 +449,7 @@ export function NewScanView() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-md bg-neutral-50 p-3 font-mono text-xs text-neutral-700">
+                <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-md bg-background p-3 font-mono text-xs text-muted-foreground">
                   {selectedTarget.systemPrompt}
                 </pre>
                 {selectedTarget.context && (
@@ -457,7 +457,7 @@ export function NewScanView() {
                     <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Context (RAG)
                     </div>
-                    <pre className="mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded-md bg-neutral-50 p-3 font-mono text-xs text-neutral-700">
+                    <pre className="mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded-md bg-background p-3 font-mono text-xs text-muted-foreground">
                       {selectedTarget.context}
                     </pre>
                   </div>
@@ -529,7 +529,7 @@ export function NewScanView() {
           <Card className="border-red-200">
             <CardContent className="flex flex-col items-start justify-between gap-3 p-5 sm:flex-row sm:items-center">
               <div>
-                <div className="text-sm font-semibold text-neutral-900">
+                <div className="text-sm font-semibold text-foreground">
                   {payloadCount} payload{payloadCount === 1 ? '' : 's'} will be
                   sent across {selectedAttacks.length} attack type
                   {selectedAttacks.length === 1 ? '' : 's'}.
