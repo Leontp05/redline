@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
 import { Trophy, TrendingUp, AlertTriangle, Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -79,14 +79,22 @@ function ModelRow({ model, rank }: { model: BenchmarkModel; rank: number }) {
 }
 
 export function BenchmarkLeaderboard() {
-  const { data, isLoading, isError } = useQuery<BenchmarkData>({
-    queryKey: ['benchmark'],
-    queryFn: async () => {
-      const res = await fetch('/api/benchmark')
-      return res.json()
-    },
-    staleTime: 60 * 60 * 1000, // 1 hour
-  })
+  const [data, setData] = useState<BenchmarkData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isError, setIsError] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/benchmark')
+      .then((res) => res.json())
+      .then((d) => {
+        setData(d)
+        setIsLoading(false)
+      })
+      .catch(() => {
+        setIsError(true)
+        setIsLoading(false)
+      })
+  }, [])
 
   return (
     <section id="benchmark" className="bg-black py-20">
