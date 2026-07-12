@@ -10,6 +10,7 @@ import { checkScanRateLimit } from '@/lib/rate-limit'
 import { cache_store, CACHE_KEYS } from '@/lib/cache'
 import { logger } from '@/lib/logger'
 import { notifyScanComplete } from '@/lib/email'
+import { fireWebhooks } from '@/lib/webhook-send'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -229,6 +230,30 @@ export async function POST(req: NextRequest) {
           // Email failure should never affect the scan result.
           scanLog.warn('scan.email_failed', {
             error: emailErr instanceof Error ? emailErr.message : String(emailErr),
+          })
+        }
+
+        // Fire webhooks (notify external systems — Slack, Discord, CI/CD, etc.)
+        try {
+          const vulnerableCount = await db.result.count({
+            where: { scanId: scan.id, success: true },
+          })
+          const totalResults = await db.result.count({ where: { scanId: scan.id } })
+          const completedScan = await db.scan.findUnique({
+            where: { id: scan.id },
+            select: { overallScore: true },
+          })
+          await fireWebhooks(userId, 'scan.complete', {
+            scanId: scan.id,
+            targetId: target.id,
+            targetName: target.name,
+            overallScore: completedScan?.overallScore ?? null,
+            vulnerableCount,
+            totalCount: totalResults,
+          })
+        } catch (webhookErr) {
+          scanLog.warn('scan.webhook_failed', {
+            error: webhookErr instanceof Error ? webhookErr.message : String(webhookErr),
           })
         }
       } catch (err) {

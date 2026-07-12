@@ -29,6 +29,7 @@ import { ScanReportView } from '@/components/redline/scan-report-view'
 import { HardenView } from '@/components/redline/harden-view'
 import { BillingView } from '@/components/redline/billing-view'
 import { CompareView } from '@/components/redline/compare-view'
+import { SettingsView } from '@/components/redline/settings-view'
 import { useAuthUser, type AuthUser } from '@/lib/redline-api'
 
 import {
@@ -68,6 +69,8 @@ function CurrentView() {
       return <BillingView />
     case 'compare':
       return <CompareView />
+    case 'settings':
+      return <SettingsView />
     default:
       return <DashboardView />
   }

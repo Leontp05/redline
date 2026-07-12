@@ -38,6 +38,46 @@ model User {
   targets       Target[]
   scans         Scan[]
   auditEvents   AuditEvent[]
+  apiKeys       ApiKey[]
+  webhooks      Webhook[]
+}
+
+// ─────────────────────────────────────────────
+// Public API keys (for CI/CD + programmatic access)
+// ─────────────────────────────────────────────
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String   // user-facing label, e.g. "CI/CD" or "GitHub Actions"
+  keyHash     String   @unique // SHA-256 hash of the key (we never store the raw key)
+  keyPrefix   String   // first 8 chars, for display: "rl_live_abc..."
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────
+// Webhooks (notify external systems when scans complete)
+// ─────────────────────────────────────────────
+
+model Webhook {
+  id          String   @id @default(cuid())
+  userId      String
+  url         String   // the endpoint to POST to
+  events      String   @default("scan.complete") // comma-separated: "scan.complete,scan.failed"
+  secret      String   // used to sign the webhook payload (HMAC)
+  isActive    Boolean  @default(true)
+  lastFiredAt DateTime?
+  lastStatus  Int?     // HTTP status code of last delivery
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Account {

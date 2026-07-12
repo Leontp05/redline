@@ -12,6 +12,7 @@ import {
   CreditCard,
   LogOut,
   GitCompare,
+  Settings,
 } from 'lucide-react'
 import { useRedlineStore, type RedlineView } from './use-redline-store'
 import type { AuthUser } from '@/lib/redline-api'
@@ -43,6 +44,7 @@ const TABS: TabDef[] = [
   { key: 'compare', label: 'Compare', icon: GitCompare },
   { key: 'harden', label: 'Harden', icon: Shield },
   { key: 'billing', label: 'Billing', icon: CreditCard },
+  { key: 'settings', label: 'Settings', icon: Settings },
 ]
 
 function initialsFrom(user: AuthUser): string {
