@@ -14,24 +14,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Z.ai Code Scaffold - AI-Powered Development",
-  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
+  title: "Redline — AI Security Testing Platform",
+  description: "Automated red-teaming for LLM-powered apps. Run 40+ attack payloads across 6 categories, score defenses, and auto-harden system prompts.",
+  keywords: ["Redline", "AI security", "LLM security", "prompt injection", "jailbreak", "red teaming", "AI testing", "OWASP LLM01"],
+  authors: [{ name: "Redline" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/favicon.svg",
   },
   openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    title: "Redline — AI Security Testing Platform",
+    description: "Break your LLM before attackers do. Run 40+ attack payloads, score defenses, auto-harden.",
+    url: "https://redline-orcin.vercel.app",
+    siteName: "Redline",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
+    title: "Redline — AI Security Testing Platform",
+    description: "Break your LLM before attackers do. Run 40+ attack payloads, score defenses, auto-harden.",
   },
 };
 
