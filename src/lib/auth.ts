@@ -5,6 +5,25 @@ import Credentials from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { db } from '@/lib/db'
 
+// Simple in-memory rate limiter for admin login (brute force protection).
+// Tracks attempts per IP. 5 attempts per 15 minutes.
+const adminLoginAttempts = new Map<string, { count: number; resetAt: number }>()
+const ADMIN_RATE_LIMIT = { maxAttempts: 5, windowMs: 15 * 60 * 1000 }
+
+function checkAdminRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = adminLoginAttempts.get(ip)
+  if (!entry || now > entry.resetAt) {
+    adminLoginAttempts.set(ip, { count: 1, resetAt: now + ADMIN_RATE_LIMIT.windowMs })
+    return true
+  }
+  if (entry.count >= ADMIN_RATE_LIMIT.maxAttempts) {
+    return false
+  }
+  entry.count++
+  return true
+}
+
 /**
  * NextAuth v5 (Auth.js) configuration.
  *
@@ -36,9 +55,16 @@ const providers = [
     credentials: {
       password: { label: 'Admin Key', type: 'password' },
     },
-    async authorize(credentials) {
+    async authorize(credentials, req) {
       const adminKey = process.env.ADMIN_API_KEY
       if (!adminKey) return null // admin login disabled
+
+      // Rate limit: 5 attempts per 15 minutes per IP
+      const ip = req?.headers?.get?.('x-forwarded-for')?.split(',')[0]?.trim() ||
+        req?.headers?.get?.('x-real-ip') || 'unknown'
+      if (!checkAdminRateLimit(ip)) {
+        return null // rate limited — silently fail (don't reveal why)
+      }
 
       const key = (credentials?.password as string)?.trim()
       if (!key || key !== adminKey) return null
@@ -100,6 +126,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   trustHost: true,
   secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
+  // Secure cookies in production (HTTPS only, SameSite=Lax)
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   providers,
   callbacks: {
     async jwt({ token, user }) {
