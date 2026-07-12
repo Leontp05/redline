@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { HackerTerminalHero } from '@/components/landing/hacker-hero'
 import { AttackDatabase } from '@/components/landing/attack-database'
+import { BenchmarkLeaderboard } from '@/components/landing/benchmark-leaderboard'
 
 // ─────────────────────────────────────────────
 // Nav bar
@@ -51,6 +52,12 @@ function NavBar() {
             className="hidden text-xs text-neutral-400 hover:text-white sm:inline"
           >
             Attacks
+          </a>
+          <a
+            href="#benchmark"
+            className="hidden text-xs text-neutral-400 hover:text-white sm:inline"
+          >
+            Benchmark
           </a>
           <a
             href="#pricing"
@@ -815,6 +822,7 @@ export default function LandingPage() {
       <BeforeAfterDemo />
       <Pricing />
       <FAQ />
+      <BenchmarkLeaderboard />
       <FinalCTA />
       <Footer />
     </main>
