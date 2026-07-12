@@ -1,0 +1,53 @@
+name: 'Redline Security Scan'
+description: 'Run an automated red-teaming scan against your LLM system prompt. Fails the build if the security score is below a threshold.'
+author: 'Redline'
+branding:
+  icon: 'shield'
+  color: 'red'
+
+inputs:
+  api-key:
+    description: 'Your Redline API key (rl_live_xxx). Generate one at Settings → API Keys.'
+    required: true
+  system-prompt:
+    description: 'The system prompt to test. Either this or target-id is required.'
+    required: false
+  target-id:
+    description: 'An existing target ID to scan. Either this or system-prompt is required.'
+    required: false
+  target-name:
+    description: 'Name for the target (only used if system-prompt is provided). Default: "CI/CD Scan".'
+    required: false
+    default: 'CI/CD Scan'
+  api-url:
+    description: 'The Redline API base URL. Default: https://redline-orcin.vercel.app'
+    required: false
+    default: 'https://redline-orcin.vercel.app'
+  min-score:
+    description: 'Minimum security score to pass (0-100). If the scan scores below this, the action fails. Default: 50.'
+    required: false
+    default: '50'
+  fail-on-vulnerable:
+    description: 'Fail the build if any vulnerabilities are found (overrides min-score). Default: false.'
+    required: false
+    default: 'false'
+  timeout-minutes:
+    description: 'Maximum minutes to wait for the scan to complete. Default: 5.'
+    required: false
+    default: '5'
+
+outputs:
+  scan-id:
+    description: 'The ID of the completed scan.'
+  score:
+    description: 'The overall security score (0-100).'
+  vulnerable-count:
+    description: 'Number of vulnerable attack results.'
+  total-count:
+    description: 'Total number of attack results.'
+  report-url:
+    description: 'URL to view the full scan report in the Redline app.'
+
+runs:
+  using: 'node20'
+  main: 'index.js'

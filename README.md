@@ -154,6 +154,38 @@ redline/
 └── package.json
 ```
 
+## CI/CD Integration
+
+Redline ships with a GitHub Action that runs security scans on every push and pull request.
+
+### Quick setup
+
+1. Generate an API key at **Settings → API Keys** in the app
+2. Add it as a repository secret: `REDLINE_API_KEY`
+3. Add this workflow to `.github/workflows/redline.yml`:
+
+```yaml
+name: Redline Security Scan
+on: [push, pull_request]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Redline Security Scan
+        uses: Leontp05/redline@main
+        with:
+          api-key: ${{ secrets.REDLINE_API_KEY }}
+          system-prompt: ${{ steps.prompt.outputs.prompt }}
+          min-score: '70'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+The action fails the build if the security score drops below the threshold, and comments on PRs with a score summary table. See [`github-action/README.md`](github-action/README.md) for full docs.
+
 ## Deployment
 
 ### Deploy to Vercel
