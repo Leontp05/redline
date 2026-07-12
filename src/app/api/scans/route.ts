@@ -9,6 +9,7 @@ import { canCreateScan } from '@/lib/usage'
 import { checkScanRateLimit } from '@/lib/rate-limit'
 import { cache_store, CACHE_KEYS } from '@/lib/cache'
 import { logger } from '@/lib/logger'
+import { notifyScanComplete } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -197,6 +198,39 @@ export async function POST(req: NextRequest) {
         cache_store.del(CACHE_KEYS.stats(userId))
         cache_store.del(CACHE_KEYS.usage(userId))
         cache_store.del(CACHE_KEYS.scan(scan.id))
+
+        // Send email notification if the user has an email + email is configured.
+        try {
+          const user = await db.user.findUnique({
+            where: { id: userId },
+            select: { email: true },
+          })
+          if (user?.email) {
+            const completedScan = await db.scan.findUnique({
+              where: { id: scan.id },
+              include: { _count: { select: { results: true } } },
+            })
+            if (completedScan) {
+              const vulnerableCount = await db.result.count({
+                where: { scanId: scan.id, success: true },
+              })
+              await notifyScanComplete({
+                email: user.email,
+                targetName: target.name,
+                scanId: scan.id,
+                overallScore: completedScan.overallScore,
+                vulnerableCount,
+                totalCount: completedScan._count.results,
+                appUrl: process.env.NEXTAUTH_URL || 'https://redline-orcin.vercel.app',
+              })
+            }
+          }
+        } catch (emailErr) {
+          // Email failure should never affect the scan result.
+          scanLog.warn('scan.email_failed', {
+            error: emailErr instanceof Error ? emailErr.message : String(emailErr),
+          })
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         scanLog.error('scan.failed', { error: msg, durationMs: Date.now() - startTime })

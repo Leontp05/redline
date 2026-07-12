@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { HackerTerminalHero } from '@/components/landing/hacker-hero'
+import { AttackDatabase } from '@/components/landing/attack-database'
 
 // ─────────────────────────────────────────────
 // Nav bar
@@ -44,6 +45,12 @@ function NavBar() {
             className="hidden text-xs text-neutral-400 hover:text-white sm:inline"
           >
             How it works
+          </a>
+          <a
+            href="#attack-database"
+            className="hidden text-xs text-neutral-400 hover:text-white sm:inline"
+          >
+            Attacks
           </a>
           <a
             href="#pricing"
@@ -804,6 +811,7 @@ export default function LandingPage() {
       <HowItWorks />
       <ConnectionExplainer />
       <AttackCatalog />
+      <AttackDatabase />
       <BeforeAfterDemo />
       <Pricing />
       <FAQ />

@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react'
 import { Toaster } from '@/components/ui/sonner'
 import { Loader2, ShieldAlert, Github } from 'lucide-react'
 import { LoadingScreen } from '@/components/landing/loading-screen'
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 
 // Inline Google SVG (lucide doesn't have a Google brand icon)
 function GoogleIcon({ className }: { className?: string }) {
@@ -198,6 +199,7 @@ function LoginScreen() {
 }
 
 function AppShell({ user, children }: { user: AuthUser; children: ReactNode }) {
+  useKeyboardShortcuts()
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Header user={user} />
@@ -206,7 +208,10 @@ function AppShell({ user, children }: { user: AuthUser; children: ReactNode }) {
         <div className="mx-auto w-full max-w-7xl px-4 py-4 text-center text-xs text-muted-foreground sm:px-6">
           <span className="font-semibold text-red-600">Redline</span> — AI
           Security Testing Platform. Built for red-teaming LLM applications. |
-          Educational use only.
+          Educational use only. |
+          <span className="ml-1 hidden sm:inline">
+            Shortcuts: <kbd className="rounded bg-muted px-1 font-mono text-[10px]">d</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">t</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">n</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">r</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">c</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">h</kbd>{" "}<kbd className="rounded bg-muted px-1 font-mono text-[10px]">b</kbd>
+          </span>
         </div>
       </footer>
     </div>
