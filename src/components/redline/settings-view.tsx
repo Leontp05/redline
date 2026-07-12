@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useUsage, useCheckout, usePortal, PLAN_LIST } from '@/lib/redline-api'
+import { useUsage, useCheckout, usePortal } from '@/lib/redline-api'
+import { PLAN_LIST } from '@/lib/plans'
 
 // ─── API Keys ───
 
