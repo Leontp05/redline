@@ -7,6 +7,7 @@ import { useStats, useUsage, scoreTier, planDisplayName } from '@/lib/redline-ap
 import { useRedlineStore } from './use-redline-store'
 import { StatusBadge } from './status-badge'
 import { ScoreBadge } from './score-badge'
+import { TiltCard, CountUp } from './visual-effects'
 import { cn } from '@/lib/utils'
 
 const ease = [0.16, 1, 0.3, 1] as const
@@ -19,19 +20,16 @@ function StatCard({ icon: Icon, label, value, hint, delay }: {
   delay?: number
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay, ease }}
-      className="rounded-lg border border-neutral-900 bg-[#0f0f10] p-5 transition-colors hover:border-neutral-800"
-    >
+    <TiltCard delay={delay} className="p-5">
       <div className="flex items-center justify-between">
         <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">{label}</span>
-        <Icon className="h-4 w-4 text-neutral-700" />
+        <Icon className="h-4 w-4 text-neutral-700 transition-colors group-hover:text-red-600" />
       </div>
-      <div className="mt-3 font-serif text-3xl font-light text-neutral-100">{value}</div>
+      <div className="mt-3 font-serif text-3xl font-light text-neutral-100">
+        {typeof value === 'number' ? <CountUp to={value} delay={delay} /> : value}
+      </div>
       {hint && <div className="mt-1 font-mono text-[10px] text-neutral-700">{hint}</div>}
-    </motion.div>
+    </TiltCard>
   )
 }
 

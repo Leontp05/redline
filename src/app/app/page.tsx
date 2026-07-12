@@ -10,6 +10,7 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { Header } from '@/components/redline/header'
+import { AppBackground } from '@/components/redline/app-background'
 import { useRedlineStore } from '@/components/redline/use-redline-store'
 import { HomeView } from '@/components/redline/home-view'
 import { TargetsView } from '@/components/redline/targets-view'
@@ -162,10 +163,11 @@ function LoginScreen() {
 function AppShell({ user, children }: { user: AuthUser; children: ReactNode }) {
   useKeyboardShortcuts()
   return (
-    <div className="flex min-h-screen flex-col bg-[#0a0a0b] text-neutral-200">
+    <div className="relative flex min-h-screen flex-col bg-[#0a0a0b] text-neutral-200">
+      <AppBackground />
       <Header user={user} />
-      <main className="flex-1">{children}</main>
-      <footer className="mt-auto border-t border-neutral-900 py-4">
+      <main className="relative z-10 flex-1">{children}</main>
+      <footer className="relative z-10 mt-auto border-t border-neutral-900 py-4">
         <div className="mx-auto w-full max-w-7xl px-4 text-center font-mono text-[10px] text-neutral-700 sm:px-6">
           <span className="text-red-600">Redline</span> — Educational use only
         </div>

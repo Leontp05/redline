@@ -31,6 +31,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ScoreBadge } from './score-badge'
 import { StatusBadge } from './status-badge'
 import { CategoryBars } from './category-bars'
+import { CircularGauge, TiltCard } from './visual-effects'
 import { cn } from '@/lib/utils'
 
 const ease = [0.16, 1, 0.3, 1] as const
@@ -179,28 +180,22 @@ function ScanReport({ scanId }: { scanId: string }) {
           transition={{ duration: 0.5, ease }}
           className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2"
         >
-          {/* Score */}
-          <div className="rounded-lg border border-neutral-900 bg-[#0f0f10] p-6">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">Security Score</div>
-            <div className="mt-2 flex items-end gap-2">
-              <span className={cn(
-                'font-serif text-5xl font-light',
-                scan.overallScore >= 80 ? 'text-emerald-400' : scan.overallScore >= 50 ? 'text-amber-400' : 'text-red-400',
-              )}>
-                {scan.overallScore}
-              </span>
-              <span className="mb-1 font-mono text-sm text-neutral-700">/100</span>
+          {/* Score gauge */}
+          <TiltCard className="p-6" glowColor="rgba(220, 38, 38, 0.12)">
+            <div className="flex flex-col items-center justify-center">
+              <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-neutral-700">Security Score</div>
+              <CircularGauge score={scan.overallScore} size={140} />
+              <div className="mt-3 font-mono text-xs text-neutral-600">
+                {results.length} results · {vulnerableCount} vulnerable · {results.length - vulnerableCount} defended
+              </div>
             </div>
-            <div className="mt-1 font-mono text-xs text-neutral-600">
-              {results.length} results · {vulnerableCount} vulnerable · {results.length - vulnerableCount} defended
-            </div>
-          </div>
+          </TiltCard>
 
           {/* Categories */}
-          <div className="rounded-lg border border-neutral-900 bg-[#0f0f10] p-6">
+          <TiltCard className="p-6" glowColor="rgba(220, 38, 38, 0.08)">
             <div className="mb-3 font-mono text-[10px] uppercase tracking-widest text-neutral-700">Categories</div>
             <CategoryBars scores={scan.categoryScores} compact />
-          </div>
+          </TiltCard>
         </motion.div>
       )}
 
