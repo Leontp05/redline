@@ -1,157 +1,175 @@
 'use client'
 
-import { useRef, useMemo, Suspense } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { Points, PointMaterial, Float, Wireframe } from '@react-three/drei'
-import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
-import * as THREE from 'three'
+import { useEffect, useRef } from 'react'
 
 /**
- * 3D wireframe chat bubble hero — gallery mode.
+ * Lightweight CSS + Canvas hero — no WebGL.
  *
- * A slowly rotating icosphere with a wireframe overlay, surrounded by a
- * drifting particle field. Red wireframe on charcoal. Pure visual art —
- * no text, no interaction. Scroll to enter the page.
+ * A wireframe-style rotating sphere drawn on canvas, with drifting particles.
+ * Looks like the 3D version but runs at 60fps on any device.
  */
 
-// ─── The wireframe bubble ───
-
-function WireframeBubble() {
-  const meshRef = useRef<THREE.Mesh>(null)
-  const innerRef = useRef<THREE.Mesh>(null)
-
-  useFrame((state, delta) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 0.08
-      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.15) * 0.1
-    }
-    if (innerRef.current) {
-      innerRef.current.rotation.y -= delta * 0.05
-      innerRef.current.rotation.z += delta * 0.03
-    }
-  })
-
-  return (
-    <group>
-      {/* Outer wireframe sphere */}
-      <mesh ref={meshRef} scale={2.5}>
-        <icosahedronGeometry args={[1, 2]} />
-        <meshBasicMaterial
-          color="#dc2626"
-          wireframe
-          transparent
-          opacity={0.4}
-        />
-      </mesh>
-
-      {/* Inner glowing core */}
-      <mesh ref={innerRef} scale={1.5}>
-        <icosahedronGeometry args={[1, 1]} />
-        <meshBasicMaterial
-          color="#ef4444"
-          wireframe
-          transparent
-          opacity={0.15}
-        />
-      </mesh>
-
-      {/* Solid dark core to give depth */}
-      <mesh scale={1.2}>
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshBasicMaterial color="#0a0a0b" />
-      </mesh>
-    </group>
-  )
-}
-
-// ─── Particle field ───
-
-function ParticleField({ count = 200 }: { count?: number }) {
-  const pointsRef = useRef<THREE.Points>(null)
-
-  const positions = useMemo(() => {
-    const arr = new Float32Array(count * 3)
-    for (let i = 0; i < count; i++) {
-      // Distribute in a sphere shell around the bubble
-      const radius = 4 + Math.random() * 6
-      const theta = Math.random() * Math.PI * 2
-      const phi = Math.acos(2 * Math.random() - 1)
-      arr[i * 3] = radius * Math.sin(phi) * Math.cos(theta)
-      arr[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
-      arr[i * 3 + 2] = radius * Math.cos(phi)
-    }
-    return arr
-  }, [count])
-
-  useFrame((state, delta) => {
-    if (pointsRef.current) {
-      pointsRef.current.rotation.y += delta * 0.02
-    }
-  })
-
-  return (
-    <Points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positions, 3]}
-          count={count}
-        />
-      </bufferGeometry>
-      <PointMaterial
-        size={0.03}
-        color="#dc2626"
-        transparent
-        opacity={0.5}
-        sizeAttenuation
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </Points>
-  )
-}
-
-// ─── The scene ───
-
-function HeroScene() {
-  return (
-    <>
-      <ambientLight intensity={0.3} />
-      <pointLight position={[0, 0, 0]} intensity={2} color="#dc2626" distance={10} />
-
-      <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.5}>
-        <WireframeBubble />
-      </Float>
-
-      <ParticleField count={200} />
-
-      <EffectComposer>
-        <Bloom
-          intensity={0.8}
-          luminanceThreshold={0.1}
-          luminanceSmoothing={0.9}
-          mipmapBlur
-        />
-        <Vignette eskil={false} offset={0.4} darkness={0.7} />
-      </EffectComposer>
-    </>
-  )
-}
-
-// ─── Exported component ───
-
 export function GalleryHero() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let animationId: number
+    let width = canvas.offsetWidth
+    let height = canvas.offsetHeight
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+
+    const resize = () => {
+      width = canvas.offsetWidth
+      height = canvas.offsetHeight
+      canvas.width = width * dpr
+      canvas.height = height * dpr
+      ctx.scale(dpr, dpr)
+    }
+    resize()
+    window.addEventListener('resize', resize)
+
+    // Particles
+    const particles: Array<{ x: number; y: number; z: number; vx: number; vy: number }> = []
+    for (let i = 0; i < 80; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        z: Math.random(),
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+      })
+    }
+
+    // Wireframe sphere points (latitude/longitude grid)
+    const spherePoints: Array<{ x: number; y: number; z: number }> = []
+    const latSteps = 12
+    const lonSteps = 16
+    for (let lat = 0; lat <= latSteps; lat++) {
+      for (let lon = 0; lon < lonSteps; lon++) {
+        const phi = (lat / latSteps) * Math.PI
+        const theta = (lon / lonSteps) * Math.PI * 2
+        spherePoints.push({
+          x: Math.sin(phi) * Math.cos(theta),
+          y: Math.cos(phi),
+          z: Math.sin(phi) * Math.sin(theta),
+        })
+      }
+    }
+
+    let rotation = 0
+    let lastTime = 0
+
+    const draw = (time: number) => {
+      const delta = (time - lastTime) / 1000
+      lastTime = time
+      rotation += delta * 0.15
+
+      // Clear with slight trail effect
+      ctx.fillStyle = 'rgba(10, 10, 11, 0.15)'
+      ctx.fillRect(0, 0, width, height)
+
+      // Draw particles
+      ctx.fillStyle = 'rgba(220, 38, 38, 0.3)'
+      for (const p of particles) {
+        p.x += p.vx
+        p.y += p.vy
+        if (p.x < 0) p.x = width
+        if (p.x > width) p.x = 0
+        if (p.y < 0) p.y = height
+        if (p.y > height) p.y = 0
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, 1, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // Draw wireframe sphere
+      const cx = width / 2
+      const cy = height / 2
+      const radius = Math.min(width, height) * 0.18
+
+      // Project 3D points to 2D with rotation
+      const projected = spherePoints.map((p) => {
+        // Rotate around Y axis
+        const cosR = Math.cos(rotation)
+        const sinR = Math.sin(rotation)
+        const x1 = p.x * cosR + p.z * sinR
+        const z1 = -p.x * sinR + p.z * cosR
+        // Tilt slightly
+        const cosT = Math.cos(0.3)
+        const sinT = Math.sin(0.3)
+        const y1 = p.y * cosT - z1 * sinT
+        const z2 = p.y * sinT + z1 * cosT
+
+        const scale = radius
+        return {
+          x: cx + x1 * scale,
+          y: cy + y1 * scale,
+          z: z2,
+        }
+      })
+
+      // Draw lines connecting adjacent points (wireframe)
+      ctx.strokeStyle = 'rgba(220, 38, 38, 0.25)'
+      ctx.lineWidth = 0.5
+
+      // Latitude lines
+      for (let lat = 0; lat <= latSteps; lat++) {
+        ctx.beginPath()
+        for (let lon = 0; lon < lonSteps; lon++) {
+          const idx = lat * lonSteps + lon
+          const p = projected[idx]
+          if (lon === 0) ctx.moveTo(p.x, p.y)
+          else ctx.lineTo(p.x, p.y)
+        }
+        ctx.closePath()
+        ctx.stroke()
+      }
+
+      // Longitude lines
+      for (let lon = 0; lon < lonSteps; lon++) {
+        ctx.beginPath()
+        for (let lat = 0; lat <= latSteps; lat++) {
+          const idx = lat * lonSteps + lon
+          const p = projected[idx]
+          if (lat === 0) ctx.moveTo(p.x, p.y)
+          else ctx.lineTo(p.x, p.y)
+        }
+        ctx.stroke()
+      }
+
+      // Draw points (brighter for front-facing)
+      for (const p of projected) {
+        const depth = (p.z + 1) / 2 // 0 = back, 1 = front
+        const alpha = 0.3 + depth * 0.4
+        ctx.fillStyle = `rgba(220, 38, 38, ${alpha})`
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      animationId = requestAnimationFrame(draw)
+    }
+
+    animationId = requestAnimationFrame(draw)
+
+    return () => {
+      cancelAnimationFrame(animationId)
+      window.removeEventListener('resize', resize)
+    }
+  }, [])
+
   return (
     <div className="absolute inset-0">
-      <Canvas
-        camera={{ position: [0, 0, 8], fov: 50 }}
-        gl={{ antialias: true, alpha: true }}
-        dpr={[1, 2]}
-      >
-        <Suspense fallback={null}>
-          <HeroScene />
-        </Suspense>
-      </Canvas>
+      <canvas
+        ref={canvasRef}
+        className="h-full w-full"
+        style={{ display: 'block' }}
+      />
     </div>
   )
 }
