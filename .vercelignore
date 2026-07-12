@@ -1,0 +1,7 @@
+github-action/
+skills/
+examples/
+.zscripts/
+mini-services/
+*.log
+dev.log
