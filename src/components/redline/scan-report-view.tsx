@@ -11,6 +11,7 @@ import {
   Lock,
   AlertCircle,
   Activity,
+  RefreshCw,
 } from 'lucide-react'
 
 import {
@@ -112,17 +113,27 @@ function LiveProgressCard({ completed }: { completed: number }) {
 }
 
 function FailedCard({ message }: { message: string }) {
+  const goToNewScan = useRedlineStore((s) => s.goToNewScan)
   return (
     <Card className="mb-6 border-red-200 bg-red-50/40">
       <CardContent className="flex items-start gap-3 p-5 text-sm text-red-700">
         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-        <div>
+        <div className="flex-1">
           <div className="font-semibold">Scan failed</div>
           <div className="mt-0.5 text-xs">{message}</div>
           <div className="mt-1 text-xs text-red-600/80">
-            The background scan hit an unexpected error. You can try running a
-            new scan from the New Scan tab.
+            The background scan hit an unexpected error. This usually happens
+            when the LLM provider is rate-limited or the target endpoint is
+            unreachable.
           </div>
+          <Button
+            onClick={() => goToNewScan()}
+            size="sm"
+            className="mt-3 bg-red-600 hover:bg-red-700"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Run a new scan
+          </Button>
         </div>
       </CardContent>
     </Card>

@@ -294,6 +294,8 @@ export function DashboardView() {
   const setView = useRedlineStore((s) => s.setView)
   const goToNewScan = useRedlineStore((s) => s.goToNewScan)
 
+  const isNewUser = !isLoading && !isError && data && data.targetsCount === 0
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
       {/* Hero */}
@@ -326,6 +328,73 @@ export function DashboardView() {
           </div>
         </div>
       </section>
+
+      {/* Onboarding banner for new users */}
+      {isNewUser && (
+        <Card className="mb-6 border-amber-200 bg-gradient-to-br from-amber-50 via-white to-white">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                <FlaskConical className="h-5 w-5" />
+              </span>
+              <div className="flex-1">
+                <h2 className="text-base font-semibold text-neutral-900">
+                  Welcome to Redline! Let&apos;s run your first scan.
+                </h2>
+                <p className="mt-1 text-sm text-neutral-600">
+                  Get started in 3 steps — takes about 2 minutes.
+                </p>
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <button
+                    onClick={() => setView('targets')}
+                    className="flex items-start gap-3 rounded-lg border border-neutral-200 bg-white p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-50"
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">1</span>
+                    <div>
+                      <div className="text-xs font-semibold text-neutral-900">Create a target</div>
+                      <div className="text-[11px] text-neutral-500">Paste your LLM&apos;s system prompt</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => goToNewScan()}
+                    className="flex items-start gap-3 rounded-lg border border-neutral-200 bg-white p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-50"
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">2</span>
+                    <div>
+                      <div className="text-xs font-semibold text-neutral-900">Run a scan</div>
+                      <div className="text-[11px] text-neutral-500">40 attack payloads fire automatically</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setView('billing')}
+                    className="flex items-start gap-3 rounded-lg border border-neutral-200 bg-white p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-50"
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">3</span>
+                    <div>
+                      <div className="text-xs font-semibold text-neutral-900">Harden & re-test</div>
+                      <div className="text-[11px] text-neutral-500">Auto-fix vulnerabilities, see the delta</div>
+                    </div>
+                  </button>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button onClick={() => setView('targets')} size="sm" className="bg-amber-600 hover:bg-amber-700">
+                    <ListChecks className="h-3.5 w-3.5" />
+                    Create your first target
+                  </Button>
+                  <Button
+                    onClick={() => setView('billing')}
+                    size="sm"
+                    variant="outline"
+                    className="border-amber-200 text-amber-700 hover:bg-amber-50"
+                  >
+                    View plans
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Usage indicator (Phase 2 — billing) */}
       <UsageIndicator />
