@@ -53,6 +53,7 @@ import {
 import { TARGET_TEMPLATES } from '@/lib/target-templates'
 import { useRedlineStore } from './use-redline-store'
 import { ScoreBadge } from './score-badge'
+import { ScanModal } from './scan-modal'
 
 function TargetLimitBanner({ message }: { message: string }) {
   const goToBilling = useRedlineStore((s) => s.goToBilling)
@@ -538,6 +539,8 @@ export function TargetsView() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+      <ScanModal />
+
       <div className="mb-6 flex items-center gap-2">
         <TargetIcon className="h-5 w-5 text-red-600" />
         <h2 className="text-xl font-bold tracking-tight text-neutral-200">

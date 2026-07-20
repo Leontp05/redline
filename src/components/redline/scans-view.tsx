@@ -20,6 +20,7 @@ import {
   useScans,
   useScan,
   useCreateScan,
+  useHarden,
   useTargets,
   JfetchError,
   type ScanListItem,
@@ -284,10 +285,12 @@ function ScanReport({ scanId }: { scanId: string }) {
 export function ScansView() {
   const { data: scans, isLoading } = useScans()
   const selectedScanId = useRedlineStore((s) => s.selectedScanId)
+  const showHardenPanel = useRedlineStore((s) => s.showHardenPanel)
 
   if (selectedScanId) {
     return (
       <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6">
+        {showHardenPanel && <HardenPanel scanId={selectedScanId} />}
         <ScanReport scanId={selectedScanId} />
       </div>
     )
@@ -327,5 +330,159 @@ export function ScansView() {
         </div>
       )}
     </div>
+  )
+}
+
+// ─── Harden panel (inline in scan report) ───
+
+function HardenPanel({ scanId }: { scanId: string }) {
+  const setShowHardenPanel = useRedlineStore((s) => s.setShowHardenPanel)
+  const harden = useHarden()
+  const { data: originalScan } = useScan(scanId)
+
+  const [phase, setPhase] = useState<'idle' | 'rewriting' | 'polling' | 'done'>('idle')
+  const [hardenedScanId, setHardenedScanId] = useState<string | null>(null)
+  const { data: hardenedScan } = useScan(phase === 'polling' || phase === 'done' ? hardenedScanId : null)
+
+  // Check if hardened scan is complete — derive phase from status
+  useEffect(() => {
+    if (phase !== 'polling') return
+    if (hardenedScan?.status === 'complete' || hardenedScan?.status === 'failed') {
+      const isComplete = hardenedScan.status === 'complete'
+      // Use setTimeout to defer the state update out of the effect
+      const timer = setTimeout(() => {
+        if (isComplete) {
+          setPhase('done')
+        } else {
+          setPhase('idle')
+          toast.error('Hardened scan failed. Try again.')
+        }
+      }, 0)
+      return () => clearTimeout(timer)
+    }
+  }, [hardenedScan?.status, phase])
+
+  const handleHarden = () => {
+    setPhase('rewriting')
+    harden.mutate(
+      { scanId },
+      {
+        onSuccess: (data: { hardenedScanId: string }) => {
+          setHardenedScanId(data.hardenedScanId)
+          setPhase('polling')
+          toast.success('Prompt hardened! Re-testing...')
+        },
+        onError: (err: Error) => {
+          toast.error(err.message || 'Hardening failed.')
+          setPhase('idle')
+        },
+      },
+    )
+  }
+
+  const beforeScore = originalScan?.overallScore
+  const afterScore = hardenedScan?.overallScore
+  const delta = beforeScore != null && afterScore != null ? afterScore - beforeScore : null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease }}
+      className="mb-6"
+    >
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Shield className="h-5 w-5 text-red-600" />
+          <h2 className="font-serif text-xl text-neutral-100">Harden</h2>
+        </div>
+        <button onClick={() => setShowHardenPanel(false)} className="font-mono text-xs text-neutral-600 hover:text-neutral-400">
+          Close
+        </button>
+      </div>
+
+      {/* Idle state */}
+      {phase === 'idle' && (
+        <div className="rounded-lg border border-neutral-900 bg-[#0f0f10] p-6">
+          <p className="font-mono text-xs text-neutral-500">
+            Redline will rewrite your system prompt to close detected gaps, then re-run the full attack suite.
+          </p>
+          <Button onClick={handleHarden} className="mt-4 bg-red-600 hover:bg-red-700">
+            <Shield className="h-4 w-4" />
+            Harden This Prompt
+          </Button>
+        </div>
+      )}
+
+      {/* Rewriting state */}
+      {phase === 'rewriting' && (
+        <div className="rounded-lg border border-amber-900/40 bg-amber-950/10 p-6">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
+            <div>
+              <div className="font-mono text-sm text-amber-400">Rewriting system prompt...</div>
+              <div className="font-mono text-[10px] text-amber-700">LLM is analyzing vulnerabilities and rewriting the prompt. ~15-20 seconds.</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Polling state */}
+      {phase === 'polling' && (
+        <div className="rounded-lg border border-amber-900/40 bg-amber-950/10 p-6">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
+            <div>
+              <div className="font-mono text-sm text-amber-400">Re-running attack suite...</div>
+              <div className="font-mono text-[10px] text-amber-700">
+                {hardenedScan?.results?.length || 0} of 40 payloads completed
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-neutral-900">
+            <div
+              className="h-full rounded-full bg-amber-500 transition-all duration-500"
+              style={{ width: `${((hardenedScan?.results?.length || 0) / 40) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Done state — before/after */}
+      {phase === 'done' && (
+        <div className="rounded-lg border border-emerald-900/40 bg-emerald-950/10 p-6">
+          <div className="mb-4 font-mono text-sm text-emerald-400">✓ Hardening complete</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-lg border border-neutral-900 bg-[#0a0a0b] p-4 text-center">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-700">Before</div>
+              <div className={cn('mt-1 font-serif text-3xl', beforeScore != null && beforeScore >= 80 ? 'text-emerald-400' : beforeScore != null && beforeScore >= 50 ? 'text-amber-400' : 'text-red-400')}>
+                {beforeScore ?? '—'}
+              </div>
+            </div>
+            <div className="rounded-lg border border-neutral-900 bg-[#0a0a0b] p-4 text-center">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-700">After</div>
+              <div className={cn('mt-1 font-serif text-3xl', afterScore != null && afterScore >= 80 ? 'text-emerald-400' : afterScore != null && afterScore >= 50 ? 'text-amber-400' : 'text-red-400')}>
+                {afterScore ?? '—'}
+              </div>
+            </div>
+          </div>
+          {delta != null && (
+            <div className="mt-3 text-center">
+              <span className={cn('inline-flex items-center gap-1 rounded-full px-4 py-1 font-mono text-sm font-semibold', delta > 0 ? 'bg-emerald-600/20 text-emerald-400' : 'bg-red-600/20 text-red-400')}>
+                {delta > 0 ? `▲ +${delta} points` : delta < 0 ? `▼ ${delta} points` : 'No change'}
+              </span>
+            </div>
+          )}
+          {hardenedScan?.target?.systemPrompt && (
+            <details className="mt-4">
+              <summary className="cursor-pointer font-mono text-[10px] text-neutral-600 hover:text-neutral-400">View hardened prompt</summary>
+              <pre className="mt-2 overflow-x-auto rounded bg-black/30 p-3 font-mono text-[10px] text-neutral-500">
+                {hardenedScan.target.systemPrompt}
+              </pre>
+            </details>
+          )}
+        </div>
+      )}
+    </motion.div>
   )
 }

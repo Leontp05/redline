@@ -7,6 +7,10 @@
  * Stripe price IDs are optional — they're only needed when Stripe is
  * configured. Set STRIPE_PRICE_PRO and STRIPE_PRICE_TEAM env vars to the
  * Stripe Price IDs from your Stripe dashboard.
+ *
+ * NOTE: If Stripe is not available in your country (e.g. India), use
+ * Razorpay instead. The billing UI + webhook pattern is the same —
+ * just swap src/lib/stripe.ts for a Razorpay integration.
  */
 
 export type PlanTier = 'free' | 'pro' | 'team'
@@ -33,10 +37,10 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     id: 'free',
     name: 'Free',
     priceMonthly: 0,
-    description: 'For trying out Redline and small projects.',
+    description: 'For trying out Redline.',
     features: {
-      scansPerMonth: 3,
-      maxTargets: 2,
+      scansPerMonth: 2,
+      maxTargets: 1,
       simulateMode: true,
       apiConnectMode: false,
       harden: false,
@@ -48,33 +52,33 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
   pro: {
     id: 'pro',
     name: 'Pro',
-    priceMonthly: 29,
+    priceMonthly: 9,
     description: 'For developers testing their own LLM apps.',
     features: {
-      scansPerMonth: 50,
-      maxTargets: 10,
+      scansPerMonth: 25,
+      maxTargets: 5,
       simulateMode: true,
       apiConnectMode: true,
       harden: true,
       priorityQueue: false,
     },
-    rateLimitSeconds: 30, // 1 scan per 30 sec
+    rateLimitSeconds: 60, // 1 scan per 1 min
     stripePriceId: process.env.STRIPE_PRICE_PRO,
   },
   team: {
     id: 'team',
     name: 'Team',
-    priceMonthly: 99,
+    priceMonthly: 29,
     description: 'For teams security-testing multiple LLM apps.',
     features: {
-      scansPerMonth: 250,
+      scansPerMonth: 100,
       maxTargets: -1, // unlimited
       simulateMode: true,
       apiConnectMode: true,
       harden: true,
       priorityQueue: true,
     },
-    rateLimitSeconds: 10, // 1 scan per 10 sec
+    rateLimitSeconds: 15, // 1 scan per 15 sec
     stripePriceId: process.env.STRIPE_PRICE_TEAM,
   },
 }
