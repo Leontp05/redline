@@ -33,6 +33,10 @@ model User {
   // Admin — bypasses all quotas, rate limits, and feature gates
   isAdmin                 Boolean @default(false)
 
+  // Username + password auth (for users who don't use OAuth)
+  username                String?  @unique
+  password                String?  // bcrypt hash (null for OAuth users)
+
   accounts      Account[]
   sessions      Session[]
   targets       Target[]

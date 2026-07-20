@@ -39,14 +39,14 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     priceMonthly: 0,
     description: 'For trying out Redline.',
     features: {
-      scansPerMonth: 2,
-      maxTargets: 1,
+      scansPerMonth: 5,
+      maxTargets: 3,
       simulateMode: true,
       apiConnectMode: false,
       harden: false,
       priorityQueue: false,
     },
-    rateLimitSeconds: 300, // 1 scan per 5 min
+    rateLimitSeconds: 300,
     stripePriceId: undefined,
   },
   pro: {
@@ -55,14 +55,14 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     priceMonthly: 9,
     description: 'For developers testing their own LLM apps.',
     features: {
-      scansPerMonth: 25,
-      maxTargets: 5,
+      scansPerMonth: 50,
+      maxTargets: 10,
       simulateMode: true,
       apiConnectMode: true,
       harden: true,
       priorityQueue: false,
     },
-    rateLimitSeconds: 60, // 1 scan per 1 min
+    rateLimitSeconds: 60,
     stripePriceId: process.env.STRIPE_PRICE_PRO,
   },
   team: {
@@ -71,14 +71,14 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     priceMonthly: 29,
     description: 'For teams security-testing multiple LLM apps.',
     features: {
-      scansPerMonth: 100,
-      maxTargets: -1, // unlimited
+      scansPerMonth: 200,
+      maxTargets: -1,
       simulateMode: true,
       apiConnectMode: true,
       harden: true,
       priorityQueue: true,
     },
-    rateLimitSeconds: 15, // 1 scan per 15 sec
+    rateLimitSeconds: 15,
     stripePriceId: process.env.STRIPE_PRICE_TEAM,
   },
 }

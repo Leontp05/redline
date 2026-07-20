@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { signIn } from 'next-auth/react'
 import { Toaster } from '@/components/ui/sonner'
@@ -64,13 +64,42 @@ function CurrentView() {
 }
 
 function LoginScreen() {
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Hidden admin login — accessed via URL param ?admin=true
   const [showAdmin, setShowAdmin] = useState(false)
   const [adminKey, setAdminKey] = useState('')
-  const [adminLoading, setAdminLoading] = useState(false)
+  useEffect(() => {
+    const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true'
+    if (isAdmin) {
+      const timer = setTimeout(() => setShowAdmin(true), 0)
+      return () => clearTimeout(timer)
+    }
+  }, [])
+
+  const handleCredentials = () => {
+    if (!username.trim() || !password.trim()) {
+      setError('Username and password are required.')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    signIn('credentials', {
+      callbackUrl: '/app',
+      redirect: true,
+      username: username.trim().toLowerCase(),
+      password: password.trim(),
+      mode: mode === 'signup' ? 'signup' : 'login',
+    })
+  }
 
   const handleAdminLogin = () => {
     if (!adminKey.trim()) return
-    setAdminLoading(true)
+    setLoading(true)
     signIn('admin', { callbackUrl: '/app', password: adminKey.trim(), redirect: true })
   }
 
@@ -90,50 +119,106 @@ function LoginScreen() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            {/* OAuth buttons */}
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => signIn('github', { callbackUrl: '/app' })}
                 className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
               >
                 <Github className="h-5 w-5" />
-                Sign in with GitHub
+                Continue with GitHub
               </button>
               <button
                 onClick={() => signIn('google', { callbackUrl: '/app' })}
                 className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-neutral-800 bg-transparent px-4 text-sm font-semibold text-neutral-300 transition-colors hover:bg-neutral-900"
               >
                 <GoogleIcon className="h-5 w-5" />
-                Sign in with Google
+                Continue with Google
               </button>
             </div>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-neutral-900" />
+              <span className="font-mono text-[10px] text-neutral-700">OR</span>
+              <div className="h-px flex-1 bg-neutral-900" />
+            </div>
+
+            {/* Tabs: Sign In / Sign Up */}
+            <div className="flex gap-1 rounded-lg border border-neutral-900 bg-[#0a0a0b] p-1">
+              <button
+                onClick={() => { setMode('signin'); setError(null) }}
+                className={`flex-1 rounded-md px-4 py-2 font-mono text-xs uppercase tracking-wider transition-colors ${mode === 'signin' ? 'bg-neutral-800 text-neutral-200' : 'text-neutral-600 hover:text-neutral-400'}`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => { setMode('signup'); setError(null) }}
+                className={`flex-1 rounded-md px-4 py-2 font-mono text-xs uppercase tracking-wider transition-colors ${mode === 'signup' ? 'bg-neutral-800 text-neutral-200' : 'text-neutral-600 hover:text-neutral-400'}`}
+              >
+                Create Account
+              </button>
+            </div>
+
+            {/* Username + password form */}
+            <div className="flex flex-col gap-3">
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCredentials()}
+                className="h-11 w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 font-mono text-sm text-neutral-200 placeholder-neutral-700"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCredentials()}
+                className="h-11 w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 font-mono text-sm text-neutral-200 placeholder-neutral-700"
+              />
+              {error && (
+                <div className="font-mono text-[10px] text-red-500">{error}</div>
+              )}
+              <button
+                onClick={handleCredentials}
+                disabled={loading || !username.trim() || !password.trim()}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-red-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {mode === 'signup' ? 'Creating account...' : 'Signing in...'}
+                  </>
+                ) : (
+                  mode === 'signup' ? 'Create Account' : 'Sign In'
+                )}
+              </button>
+            </div>
+
             <p className="text-center text-[10px] text-neutral-700">
               By signing in you agree to use Redline for educational and authorized security testing only.
             </p>
-            <div className="mt-2 border-t border-neutral-900 pt-4">
-              {!showAdmin ? (
-                <button
-                  onClick={() => setShowAdmin(true)}
-                  className="mx-auto block font-mono text-[10px] text-neutral-700 hover:text-neutral-500"
-                >
-                  Admin login
-                </button>
-              ) : (
+
+            {/* Hidden admin login — only visible with ?admin=true */}
+            {showAdmin && (
+              <div className="mt-2 border-t border-neutral-900 pt-4">
                 <div className="flex flex-col gap-2">
                   <input
                     type="password"
-                    placeholder="Admin API key"
+                    placeholder="Admin key"
                     value={adminKey}
                     onChange={(e) => setAdminKey(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
-                    className="h-9 w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 font-mono text-xs text-neutral-200"
-                    disabled={adminLoading}
+                    className="h-9 w-full rounded-md border border-amber-900/40 bg-amber-950/10 px-3 font-mono text-xs text-amber-300 placeholder-amber-700"
                   />
                   <button
                     onClick={handleAdminLogin}
-                    disabled={adminLoading || !adminKey.trim()}
-                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-neutral-900 px-4 text-xs font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50"
+                    disabled={loading || !adminKey.trim()}
+                    className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-amber-600 px-4 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
                   >
-                    {adminLoading ? (
+                    {loading ? (
                       <>
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         Authenticating...
@@ -141,13 +226,13 @@ function LoginScreen() {
                     ) : (
                       <>
                         <ShieldAlert className="h-3.5 w-3.5" />
-                        Sign in as Admin
+                        Admin Access
                       </>
                     )}
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
