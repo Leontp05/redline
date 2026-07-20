@@ -81,18 +81,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const mode = (credentials?.mode as string) || 'login'
 
         if (!username) return null
+        // Never allow "admin" as a username — prevents finding the admin user
+        if (username === 'admin') return null
 
         // SIGNUP MODE — create a new account
         if (mode === 'signup') {
           if (!password || password.length < 4) return null
 
-          // Check if username already exists
+          // Check if username already exists (exclude admin users)
           const existing = await db.user.findFirst({
             where: {
               OR: [
                 { username },
                 { email: `${username}@redline.local` },
               ],
+              isAdmin: false,
             },
           })
           if (existing) return null
@@ -104,12 +107,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               email: `${username}@redline.local`,
               name: username,
               password: hashedPassword,
+              isAdmin: false,
             },
           })
           return user
         }
 
-        // LOGIN MODE — verify credentials
+        // LOGIN MODE — verify credentials (exclude admin users)
         if (!password) return null
 
         const user = await db.user.findFirst({
@@ -118,6 +122,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               { username },
               { email: `${username}@redline.local` },
             ],
+            isAdmin: false, // Never return the admin user via credentials
           },
         })
         if (!user || !user.password) return null
