@@ -42,7 +42,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       scansPerMonth: 5,
       maxTargets: 3,
       simulateMode: true,
-      apiConnectMode: false,
+      apiConnectMode: true,
       harden: false,
       priorityQueue: false,
     },
