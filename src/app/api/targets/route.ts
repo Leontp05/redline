@@ -92,9 +92,9 @@ export async function POST(req: NextRequest) {
       apiHeaders?: unknown
       apiModel?: unknown
     }
-    const name = typeof body.name === 'string' ? body.name.trim() : ''
+    const name = typeof body.name === 'string' ? body.name.trim().slice(0, 120) : ''
     const systemPrompt =
-      typeof body.systemPrompt === 'string' ? body.systemPrompt.trim() : ''
+      typeof body.systemPrompt === 'string' ? body.systemPrompt.trim().slice(0, 10000) : ''
     if (!name || !systemPrompt) {
       return NextResponse.json(
         { error: 'name and systemPrompt are required.' },

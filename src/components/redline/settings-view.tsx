@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useUsage, useCheckout, usePortal } from '@/lib/redline-api'
+import { useUsage } from '@/lib/redline-api'
 import { PLAN_LIST } from '@/lib/plans'
 
 // ─── API Keys ───
@@ -392,36 +392,11 @@ function ApiDocsSection() {
 
 function BillingSection() {
   const { data: usage, isLoading } = useUsage()
-  const checkout = useCheckout()
-  const portal = usePortal()
-  const [pendingPlan, setPendingPlan] = useState<string | null>(null)
 
   if (isLoading) return <div className="font-mono text-xs text-neutral-600">Loading...</div>
   if (!usage) return null
 
   const isAdmin = (usage as { isAdmin?: boolean }).isAdmin
-
-  const onUpgrade = (plan: 'pro' | 'team') => {
-    if (!usage.stripeConfigured) {
-      toast.error('Payments are in dev mode — Stripe is not configured.')
-      return
-    }
-    setPendingPlan(plan)
-    checkout.mutate(
-      { plan },
-      {
-        onSuccess: (url: string) => { window.location.href = url },
-        onError: (err: Error) => { toast.error(err.message); setPendingPlan(null) },
-      },
-    )
-  }
-
-  const onManage = () => {
-    portal.mutate(undefined, {
-      onSuccess: (url: string) => { window.location.href = url },
-      onError: (err: Error) => { toast.error(err.message) },
-    })
-  }
 
   if (isAdmin) {
     return (
@@ -447,18 +422,10 @@ function BillingSection() {
               <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">Current Plan</div>
               <div className="mt-1 font-serif text-2xl text-neutral-100">{usage.plan === 'team' ? 'Team' : usage.plan === 'pro' ? 'Pro' : 'Free'}</div>
             </div>
-            {usage.subscriptionStatus === 'active' && (
-              <Badge variant="outline" className="border-emerald-900/50 bg-emerald-950/20 text-emerald-400">Active</Badge>
-            )}
           </div>
           <div className="mt-3 font-mono text-xs text-neutral-600">
             {usage.scansUsed} / {usage.scansLimit === -1 ? '∞' : usage.scansLimit} scans used
           </div>
-          {usage.subscriptionStatus === 'active' && (
-            <Button size="sm" variant="outline" className="mt-3 border-neutral-800 text-neutral-400" onClick={onManage}>
-              Manage subscription
-            </Button>
-          )}
         </CardContent>
       </Card>
 
@@ -466,7 +433,6 @@ function BillingSection() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {PLAN_LIST.map((plan: { id: string; name: string; priceMonthly: number; features: { scansPerMonth: number; maxTargets: number; apiConnectMode: boolean; harden: boolean } }) => {
           const isCurrent = usage.plan === plan.id
-          const isUpgradeable = plan.id === 'pro' || plan.id === 'team'
           return (
             <Card key={plan.id} className={cn('border-neutral-900 bg-[#0f0f10]', plan.id === 'pro' && 'border-red-900/40')}>
               <CardContent className="p-4">
@@ -476,21 +442,16 @@ function BillingSection() {
                   <span className="font-mono text-[10px] text-neutral-700">/mo</span>
                 </div>
                 <div className="mt-2 font-mono text-[10px] text-neutral-600">
-                  {plan.features.scansPerMonth === -1 ? '250 scans' : `${plan.features.scansPerMonth} scans`}
+                  {plan.features.scansPerMonth === -1 ? '200 scans' : `${plan.features.scansPerMonth} scans`}
                 </div>
                 {isCurrent ? (
                   <div className="mt-3 font-mono text-[10px] text-neutral-600">Current</div>
-                ) : isUpgradeable && usage.stripeConfigured ? (
-                  <Button
-                    size="sm"
-                    className="mt-3 w-full bg-red-600 hover:bg-red-700"
-                    disabled={checkout.isPending}
-                    onClick={() => onUpgrade(plan.id as 'pro' | 'team')}
-                  >
-                    {pendingPlan === plan.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Upgrade'}
-                  </Button>
-                ) : isUpgradeable ? (
-                  <div className="mt-3 font-mono text-[10px] text-neutral-700">Dev mode</div>
+                ) : plan.id !== 'free' ? (
+                  <div className="mt-3">
+                    <div className="rounded-md border border-neutral-800 bg-neutral-900/50 px-3 py-1.5 text-center font-mono text-[10px] text-neutral-500">
+                      Coming Soon
+                    </div>
+                  </div>
                 ) : (
                   <div className="mt-3 font-mono text-[10px] text-neutral-700">—</div>
                 )}
@@ -498,6 +459,21 @@ function BillingSection() {
             </Card>
           )
         })}
+      </div>
+
+      {/* Payments coming soon banner */}
+      <div className="rounded-lg border border-neutral-900 bg-[#0f0f10] p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900">
+            <Crown className="h-4 w-4 text-neutral-600" />
+          </div>
+          <div>
+            <div className="font-mono text-xs text-neutral-400">Payments Coming Soon</div>
+            <div className="font-mono text-[10px] text-neutral-700">
+              Free plan includes 5 scans/month. Paid plans will be available once payment integration is live.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
