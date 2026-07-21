@@ -187,10 +187,11 @@ export async function runScan(
       }
     }
 
-    // Run all work items at concurrency 2. We use a low limit because the
-    // upstream LLM endpoint is rate-limited; the LLM wrapper also retries
-    // 429s with exponential backoff + jitter (see src/lib/llm.ts).
-    await mapWithConcurrency(work, 2, async (item) => {
+    // For API-connect mode: use concurrency 1 (sequential) to avoid
+    // rate-limiting on free-tier providers like Groq (30 req/min).
+    // For Simulate mode: use concurrency 2 (our LLM handles it with retry).
+    const concurrency = target.apiConfig ? 1 : 2
+    await mapWithConcurrency(work, concurrency, async (item) => {
       const { attackType, attackModule, payload } = item
       let result: AttackRunResult
       try {

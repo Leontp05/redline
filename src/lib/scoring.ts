@@ -85,6 +85,11 @@ export function computeScores(
     // populates AttackTypeMeta.id with the DB id, so this lookup works.
     const meta = metaById.get(r.attackTypeId)
     if (!meta) continue
+
+    // Skip error/rate-limited results — they're not real responses and
+    // shouldn't inflate the score. We detect them by the evidence prefix.
+    if (r.evidence?.startsWith('⚠ RATE LIMIT / ERROR')) continue
+
     const key = meta.key
     let bucket = byTypeKey.get(key)
     if (!bucket) {
