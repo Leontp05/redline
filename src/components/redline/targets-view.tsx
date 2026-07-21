@@ -47,9 +47,11 @@ import {
   useTargets,
   useCreateTarget,
   useDeleteTarget,
+  useUpdateTarget,
   JfetchError,
   type TargetListItem,
 } from '@/lib/redline-api'
+import { Pencil } from 'lucide-react'
 import { TARGET_TEMPLATES } from '@/lib/target-templates'
 import { useRedlineStore } from './use-redline-store'
 import { ScoreBadge } from './score-badge'
@@ -389,17 +391,106 @@ function TargetRow({
   parentName?: string | null
 }) {
   const deleteTarget = useDeleteTarget()
+  const updateTarget = useUpdateTarget()
   const goToNewScan = useRedlineStore((s) => s.goToNewScan)
+  const [showEdit, setShowEdit] = useState(false)
+  const [editName, setEditName] = useState(target.name)
+  const [editPrompt, setEditPrompt] = useState(target.systemPrompt)
+  const [editContext, setEditContext] = useState(target.context || '')
+  const [editEndpoint, setEditEndpoint] = useState(target.apiEndpoint || '')
+  const [editHeaders, setEditHeaders] = useState('')
+  const [editModel, setEditModel] = useState(target.apiModel || '')
+
+  const handleSave = () => {
+    updateTarget.mutate(
+      {
+        id: target.id,
+        name: editName,
+        systemPrompt: editPrompt,
+        context: editContext || undefined,
+        apiEndpoint: editEndpoint || undefined,
+        apiHeaders: editHeaders || undefined,
+        apiModel: editModel || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Target updated.')
+          setShowEdit(false)
+        },
+        onError: (err: Error) => toast.error(err.message),
+      },
+    )
+  }
 
   return (
     <Card>
       <CardContent className="p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate text-base font-semibold text-neutral-200">
-                {target.name}
-              </h3>
+        {showEdit ? (
+          /* ─── Edit mode ─── */
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs text-neutral-500">Edit Target</span>
+              <button onClick={() => setShowEdit(false)} className="text-xs text-neutral-600 hover:text-neutral-400">Cancel</button>
+            </div>
+            <input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder="Name"
+              className="h-9 w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 font-mono text-xs text-neutral-200"
+            />
+            <textarea
+              value={editPrompt}
+              onChange={(e) => setEditPrompt(e.target.value)}
+              placeholder="System Prompt"
+              rows={4}
+              className="w-full resize-y rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 font-mono text-xs text-neutral-200"
+            />
+            <textarea
+              value={editContext}
+              onChange={(e) => setEditContext(e.target.value)}
+              placeholder="Context (optional)"
+              rows={2}
+              className="w-full resize-y rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 font-mono text-xs text-neutral-200"
+            />
+            {target.mode === 'api' && (
+              <div className="flex flex-col gap-2 rounded-lg border border-amber-900/30 bg-amber-950/10 p-3">
+                <input
+                  value={editEndpoint}
+                  onChange={(e) => setEditEndpoint(e.target.value)}
+                  placeholder="API Endpoint"
+                  className="h-9 w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 font-mono text-xs text-neutral-200"
+                />
+                <input
+                  value={editHeaders}
+                  onChange={(e) => setEditHeaders(e.target.value)}
+                  placeholder={'{"Authorization": "Bearer ..."}' + (target.hasApiHeaders ? ' (leave empty to keep existing)' : '')}
+                  className="h-9 w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 font-mono text-xs text-neutral-200"
+                />
+                <input
+                  value={editModel}
+                  onChange={(e) => setEditModel(e.target.value)}
+                  placeholder="Model name"
+                  className="h-9 w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 font-mono text-xs text-neutral-200"
+                />
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleSave} disabled={updateTarget.isPending} className="bg-red-600 hover:bg-red-700">
+                {updateTarget.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save'}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setShowEdit(false)} className="border-neutral-800 text-neutral-500">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          /* ─── View mode ─── */
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="truncate text-base font-semibold text-neutral-200">
+                  {target.name}
+                </h3>
               <Badge variant="secondary" className="font-mono">
                 v{target.version}
               </Badge>
@@ -462,6 +553,17 @@ function TargetRow({
                 <Crosshair className="h-3.5 w-3.5" />
                 Run Scan
               </Button>
+              {!target.parentId && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowEdit(true)}
+                  className="border-neutral-800 text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  <span className="sr-only">Edit</span>
+                </Button>
+              )}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -507,6 +609,7 @@ function TargetRow({
             </div>
           </div>
         </div>
+        )}
       </CardContent>
     </Card>
   )

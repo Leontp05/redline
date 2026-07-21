@@ -317,6 +317,31 @@ export function useDeleteTarget() {
   })
 }
 
+export function useUpdateTarget() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      id: string
+      name?: string
+      systemPrompt?: string
+      context?: string
+      apiEndpoint?: string
+      apiHeaders?: string
+      apiModel?: string
+    }) => {
+      const data = await jfetch<{ target: Target }>(`/api/targets/${input.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(input),
+      })
+      return data.target
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['targets'] })
+      qc.invalidateQueries({ queryKey: ['stats'] })
+    },
+  })
+}
+
 export function useCreateScan() {
   const qc = useQueryClient()
   return useMutation({
